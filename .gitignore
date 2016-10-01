@@ -1,5 +1,11 @@
 # virtual environment
 venv
 
+# configuration files
+bilbot.cfg
+
+# data files
+accounts.txt
+
 # et caetera
 .todo
