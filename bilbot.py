@@ -34,7 +34,27 @@ def about_command(bot, update):
 
 
 def help_command(bot, update):
-    update.reply("Mis comandos son: `/about`, `/help`, `/start`.",
+    update.reply("Mis comandos son: `/about`, `/help`, `/list`, `/start`.",
+                 parse_mode='markdown')
+
+
+def list_command(bot, update):
+    # REVIEW: should I use 'locale' configuration?
+    to_money = lambda amount: '{:,}'.format(int(amount)).replace(',', '.')
+
+    update.reply("Espera un poco, haré memoria de los hechos.")
+
+    def process(line):
+        name, amount = line.rstrip().split(';')
+        update.reply("{} sacó ${}.".format(name, amount))
+        return int(amount.replace('.', ''))
+
+    with open('accounts.txt', 'r') as accounts:
+        total = sum(process(line) for line in accounts)
+
+    update.reply("Eso es todo lo que recuerdo.")
+    update.reply("Por cierto, esto suma un gran total de...")
+    update.reply("*{}* pesos chilenos.".format(to_money(total)),
                  parse_mode='markdown')
 
 with open('bilbot.cfg') as cfgfile:
