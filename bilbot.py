@@ -6,6 +6,10 @@ This source code is subject to the terms of the Mozilla Public License.
 You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 """
 
+__AUTHOR__ = 'Nebil Kawas García'
+__LICENSE__ = 'MPL-2.0'
+__VERSION__ = '0.1.0'
+
 import inspect
 
 from telegram.ext import CommandHandler, Updater
@@ -39,6 +43,8 @@ def start_command(bot, update):
 def about_command(bot, update):
     update.reply("Hola, mi nombre es Nebilbot.")
     update.reply("Pero también me puedes llamar Bilbot.")
+    update.reply("Mi versión es `{}`.".format(__VERSION__),
+                 parse_mode='markdown')
 
 
 def help_command(bot, update):
