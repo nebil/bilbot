@@ -13,6 +13,14 @@ Update.reply = lambda self, message, **kwargs: \
     self.message.reply_text(message, **kwargs)
 
 
+def _get_commands():
+    def keep_name(key):
+        return key.split('_')[0]
+
+    return {keep_name(key): function for (key, function) in globals().items()
+            if key.endswith('_command')}
+
+
 # COMMANDS
 # ========
 
@@ -38,9 +46,8 @@ with open('bilbot.cfg') as cfgfile:
                         "\nDeclare the token in the configuration file.")
 
 updater = Updater(token=TGBOT_TOKEN)
-updater.dispatcher.add_handler(CommandHandler('start', start_command))
-updater.dispatcher.add_handler(CommandHandler('about', about_command))
-updater.dispatcher.add_handler(CommandHandler('help',  help_command))
+for name, callback in _get_commands().items():
+    updater.dispatcher.add_handler(CommandHandler(name, callback))
 
 updater.start_polling()
 updater.idle()
