@@ -1,5 +1,8 @@
 # virtual environment
 venv
 
+# configuration files
+bilbot.cfg
+
 # et caetera
 .todo
