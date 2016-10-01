@@ -25,6 +25,17 @@ Update.reply = lambda self, message, **kwargs: \
 # USEFUL FUNCTIONS
 # ====== =========
 
+def _select_filename(basename):
+    def get_fullpath(filename):
+        current_dirname = os.path.dirname(os.path.realpath(__file__))
+        return os.path.join(current_dirname, filename)
+
+    local_filename = 'local-{}'.format(basename)
+    basepath, local_filepath = map(get_fullpath, [basename, local_filename])
+
+    return local_filepath if os.path.isfile(local_filepath) else basepath
+
+
 def _get_commands():
     def keep_name(key):
         return key.split('_')[0]
@@ -92,10 +103,10 @@ def withdraw_command(bot, update, args):
 DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
 ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
 
-CURRENT_DIRNAME = os.path.dirname(os.path.realpath(__file__))
-CONFIG_FILEPATH = os.path.join(CURRENT_DIRNAME, 'bilbot.cfg')
+CONFIG_FILENAME = 'bilbot.cfg'
+SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 
-with open(CONFIG_FILEPATH) as cfgfile:
+with open(SELECTED_CONFIG) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
     TGBOT_TOKEN = CONFIG_DICT.get('bot_token')
 
