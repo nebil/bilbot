@@ -86,6 +86,12 @@ Para utilizar a Bilbot localmente, debes seguir los siguientes pasos.
    _Voilà!_  
    Ahora, Bilbot debería estar encendido.
 
+## Licencia
+
+Copyright © 2016, Nebil Kawas García  
+El código de este repositorio está bajo el [Mozilla Public License v2.0](
+https://www.mozilla.org/MPL/2.0/).
+
 [/]:# (Referencias implícitas)
 
 [api]:                 https://core.telegram.org/bots/api
