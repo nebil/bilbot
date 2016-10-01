@@ -1,3 +1,5 @@
+#! usr/bin/env python
+
 """
 Bilbot's magnificent engine.
 
