@@ -7,23 +7,27 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 """
 
 from telegram.ext import CommandHandler, Updater
+from telegram.update import Update
+
+Update.reply = lambda self, message, **kwargs: \
+    self.message.reply_text(message, **kwargs)
 
 
 # COMMANDS
 # ========
 
 def start_command(bot, update):
-    update.message.reply_text("Bilbot, operativo.")
+    update.reply("Bilbot, operativo.")
 
 
 def about_command(bot, update):
-    update.message.reply_text("Hola, mi nombre es Nebilbot.")
-    update.message.reply_text("Pero también me puedes llamar Bilbot.")
+    update.reply("Hola, mi nombre es Nebilbot.")
+    update.reply("Pero también me puedes llamar Bilbot.")
 
 
 def help_command(bot, update):
-    update.message.reply_text("Mis comandos son: `/about`, `/help`, `/start`.",
-                              parse_mode='markdown')
+    update.reply("Mis comandos son: `/about`, `/help`, `/start`.",
+                 parse_mode='markdown')
 
 with open('bilbot.cfg') as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
