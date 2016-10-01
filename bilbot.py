@@ -13,6 +13,7 @@ __LICENSE__ = 'MPL-2.0'
 __VERSION__ = '0.1.0'
 
 import inspect
+import os
 
 from telegram.ext import CommandHandler, Updater
 from telegram.update import Update
@@ -63,7 +64,7 @@ def list_command(bot, update):
         update.reply("{} sacó ${}.".format(name, amount))
         return int(amount.replace('.', ''))
 
-    with open('accounts.txt', 'r') as accounts:
+    with open(ACCOUNTS, 'r') as accounts:
         total = sum(process(line) for line in accounts)
 
     update.reply("Eso es todo lo que recuerdo.")
@@ -78,13 +79,23 @@ def withdraw_command(bot, update, args):
     message = "¿Estás seguro de que deseas retirar *{}* pesos del quiosco, {}?"
     update.reply(message.format(amount, first_name))
 
-    with open('accounts.txt', 'a') as accounts:
+    with open(ACCOUNTS, 'a') as accounts:
         record = "{};{}\n".format(first_name, amount)
         accounts.write(record)
 
     update.reply("En realidad, da lo mismo: ya hice la operación.")
 
-with open('bilbot.cfg') as cfgfile:
+
+# SETTINGS
+# ========
+
+DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
+ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
+
+CURRENT_DIRNAME = os.path.dirname(os.path.realpath(__file__))
+CONFIG_FILEPATH = os.path.join(CURRENT_DIRNAME, 'bilbot.cfg')
+
+with open(CONFIG_FILEPATH) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
     TGBOT_TOKEN = CONFIG_DICT.get('bot_token')
 
