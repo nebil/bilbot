@@ -46,7 +46,6 @@ def _get_commands():
 
 
 def _to_money(amount):
-    amount = int(amount)
     # REVIEW: should I use 'locale' configuration?
     return '{:,}'.format(amount).replace(',', '.')
 
@@ -94,17 +93,25 @@ def withdraw_command(bot, update, args):
     if len(args) == 0:
         update.reply("Debes agregar el monto, terrícola.")
     elif len(args) == 1:
-        amount = _to_money(args[0])
-        first_name = update.message.from_user.first_name
-        message = ("¿Estás seguro de que deseas retirar *{}* pesos "
-                   "del quiosco, {}?")
-        update.reply(message.format(amount, first_name))
+        try:
+            amount = int(args[0])
+            if amount < 1:
+                update.reply("El argumento debe ser estrictamente positivo.")
+            else:
+                amount = _to_money(amount)
+                first_name = update.message.from_user.first_name
+                message = ("¿Estás seguro de que deseas retirar *{}* pesos "
+                           "del quiosco, {}?")
+                update.reply(message.format(amount, first_name))
 
-        with open(ACCOUNTS, 'a') as accounts:
-            record = "{}{}{}\n".format(first_name, FIELD_DELIMITER, amount)
-            accounts.write(record)
+                with open(ACCOUNTS, 'a') as accounts:
+                    record = "{}{}{}\n".format(first_name, FIELD_DELIMITER,
+                                               amount)
+                    accounts.write(record)
 
-        update.reply("En realidad, da lo mismo: ya hice la operación.")
+                update.reply("En realidad, da lo mismo: ya hice la operación.")
+        except ValueError:
+            update.reply("El monto es inválido.")
     else:
         update.reply("No te entiendo, humano.")
 
