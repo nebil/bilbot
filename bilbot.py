@@ -117,7 +117,16 @@ with open(SELECTED_CONFIG) as cfgfile:
         raise Exception("\nThe bot token is missing."
                         "\nDeclare the token in the configuration file.")
 
-logging.basicConfig(level=logging.INFO, filename=LOGFILE)
+LOGFORMAT = ("\n{asctime}\n"
+             "====== ========\n"
+             "({levelname}) {message}\n")
+
+logging.basicConfig(level=logging.INFO,
+                    filename=LOGFILE,
+                    format=LOGFORMAT,
+                    datefmt='%d/%b %H:%M:%S',
+                    style='{')  # for enabling str.format()-style.
+
 updater = Updater(token=TGBOT_TOKEN)
 for name, callback in _get_commands().items():
     has_args = 'args' in inspect.signature(callback).parameters
