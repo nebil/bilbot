@@ -91,16 +91,22 @@ def list_command(bot, update):
 
 
 def withdraw_command(bot, update, args):
-    amount = _to_money(args[0])
-    first_name = update.message.from_user.first_name
-    message = "¿Estás seguro de que deseas retirar *{}* pesos del quiosco, {}?"
-    update.reply(message.format(amount, first_name))
+    if len(args) == 0:
+        update.reply("Debes agregar el monto, terrícola.")
+    elif len(args) == 1:
+        amount = _to_money(args[0])
+        first_name = update.message.from_user.first_name
+        message = ("¿Estás seguro de que deseas retirar *{}* pesos "
+                   "del quiosco, {}?")
+        update.reply(message.format(amount, first_name))
 
-    with open(ACCOUNTS, 'a') as accounts:
-        record = "{}{}{}\n".format(first_name, FIELD_DELIMITER, amount)
-        accounts.write(record)
+        with open(ACCOUNTS, 'a') as accounts:
+            record = "{}{}{}\n".format(first_name, FIELD_DELIMITER, amount)
+            accounts.write(record)
 
-    update.reply("En realidad, da lo mismo: ya hice la operación.")
+        update.reply("En realidad, da lo mismo: ya hice la operación.")
+    else:
+        update.reply("No te entiendo, humano.")
 
 
 # SETTINGS
