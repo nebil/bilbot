@@ -72,20 +72,22 @@ def help_command(bot, update):
 
 
 def list_command(bot, update):
-    update.reply("Espera un poco, haré memoria de los hechos.")
-
     def process(line):
         name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply("{} sacó ${}.".format(name, amount))
         return int(amount.replace('.', ''))
 
-    with open(ACCOUNTS, 'r') as accounts:
-        total = sum(process(line) for line in accounts)
+    try:
+        with open(ACCOUNTS, 'r') as accounts:
+            update.reply("Espera un poco, haré memoria de los hechos.")
+            total = sum(process(line) for line in accounts)
 
-    update.reply("Eso es todo lo que recuerdo.")
-    update.reply("Por cierto, esto suma un gran total de...")
-    update.reply("*{}* pesos chilenos.".format(_to_money(total)),
-                 parse_mode='markdown')
+            update.reply("Eso es todo lo que recuerdo.")
+            update.reply("Por cierto, esto suma un gran total de...")
+            update.reply("*{}* pesos chilenos.".format(_to_money(total)),
+                         parse_mode='markdown')
+    except FileNotFoundError:
+        update.reply("No hay registros disponibles.")
 
 
 def withdraw_command(bot, update, args):
