@@ -4,8 +4,9 @@ venv
 # configuration files
 local-bilbot.cfg
 
-# data files
+# data and logfiles
 accounts.txt
+bilbot.log
 
 # et caetera
 .todo

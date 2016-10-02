@@ -101,6 +101,8 @@ def withdraw_command(bot, update, args):
 # SETTINGS
 # ========
 
+LOG_DIR = os.getenv('OPENSHIFT_LOG_DIR', '.')
+LOGFILE = os.path.join(LOG_DIR, 'bilbot.log')
 DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
 ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
 
@@ -115,7 +117,7 @@ with open(SELECTED_CONFIG) as cfgfile:
         raise Exception("\nThe bot token is missing."
                         "\nDeclare the token in the configuration file.")
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename=LOGFILE)
 updater = Updater(token=TGBOT_TOKEN)
 for name, callback in _get_commands().items():
     has_args = 'args' in inspect.signature(callback).parameters
