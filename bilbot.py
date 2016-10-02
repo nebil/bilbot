@@ -38,14 +38,17 @@ def _select_filename(basename):
 
 
 def _get_commands():
-    def keep_name(key):
-        return key.split('_')[0]
-
-    return {keep_name(key): function for (key, function) in globals().items()
+    keep_name = lambda key: key.split('_')[0]  # from "help_command" to "help".
+    return {keep_name(key): function
+            for (key, function)
+            in globals().items()
             if key.endswith('_command')}
 
-# REVIEW: should I use 'locale' configuration?
-_to_money = lambda amount: '{:,}'.format(int(amount)).replace(',', '.')
+
+def _to_money(amount):
+    amount = int(amount)
+    # REVIEW: should I use 'locale' configuration?
+    return '{:,}'.format(amount).replace(',', '.')
 
 
 # COMMANDS
