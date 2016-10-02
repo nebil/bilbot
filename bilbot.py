@@ -121,21 +121,23 @@ with open(SELECTED_CONFIG) as cfgfile:
         raise Exception("\nThe bot token is missing."
                         "\nDeclare the token in the configuration file.")
 
-LOGFORMAT = ("\n{asctime}\n"
-             "====== ========\n"
-             "({levelname}) {message}\n")
 
-logging.basicConfig(level=logging.INFO,
-                    filename=LOGFILE,
-                    format=LOGFORMAT,
-                    datefmt='%d/%b %H:%M:%S',
-                    style='{')  # for enabling str.format()-style.
+if __name__ == '__main__':
+    LOGFORMAT = ("\n{asctime}\n"
+                 "====== ========\n"
+                 "({levelname}) {message}\n")
 
-updater = Updater(token=TGBOT_TOKEN)
-for name, callback in _get_commands().items():
-    has_args = 'args' in inspect.signature(callback).parameters
-    command_handler = CommandHandler(name, callback, pass_args=has_args)
-    updater.dispatcher.add_handler(command_handler)
+    logging.basicConfig(level=logging.INFO,
+                        filename=LOGFILE,
+                        format=LOGFORMAT,
+                        datefmt='%d/%b %H:%M:%S',
+                        style='{')  # for enabling str.format()-style.
 
-updater.start_polling()
-updater.idle()
+    updater = Updater(token=TGBOT_TOKEN)
+    for name, callback in _get_commands().items():
+        has_args = 'args' in inspect.signature(callback).parameters
+        command_handler = CommandHandler(name, callback, pass_args=has_args)
+        updater.dispatcher.add_handler(command_handler)
+
+    updater.start_polling()
+    updater.idle()
