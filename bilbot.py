@@ -75,7 +75,7 @@ def list_command(bot, update):
     update.reply("Espera un poco, haré memoria de los hechos.")
 
     def process(line):
-        name, amount = line.rstrip().split(';')
+        name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply("{} sacó ${}.".format(name, amount))
         return int(amount.replace('.', ''))
 
@@ -95,7 +95,7 @@ def withdraw_command(bot, update, args):
     update.reply(message.format(amount, first_name))
 
     with open(ACCOUNTS, 'a') as accounts:
-        record = "{};{}\n".format(first_name, amount)
+        record = "{}{}{}\n".format(first_name, FIELD_DELIMITER, amount)
         accounts.write(record)
 
     update.reply("En realidad, da lo mismo: ya hice la operación.")
@@ -109,6 +109,7 @@ LOGFILE = os.path.join(LOG_DIR, 'bilbot.log')
 DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
 ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
 
+FIELD_DELIMITER = ';'
 CONFIG_FILENAME = 'bilbot.cfg'
 SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 
