@@ -72,8 +72,7 @@ Para utilizar a Bilbot localmente, debes seguir los siguientes pasos.
    ```
 
 5. :wrench:
-   Configura el archivo `pseudo-bilbot.cfg` con el _token_ de tu bot.  
-   Luego, elimina el prefijo `pseudo-` del archivo.
+   Configura el archivo `bilbot.cfg` con el _token_ de tu bot.
 
 6. :snake:
    Ejecuta el _script_.
