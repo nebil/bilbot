@@ -13,6 +13,7 @@ __LICENSE__ = 'MPL-2.0'
 __VERSION__ = '0.1.0'
 
 import inspect
+import logging
 import os
 
 from telegram.ext import CommandHandler, Updater
@@ -114,6 +115,7 @@ with open(SELECTED_CONFIG) as cfgfile:
         raise Exception("\nThe bot token is missing."
                         "\nDeclare the token in the configuration file.")
 
+logging.basicConfig(level=logging.INFO)
 updater = Updater(token=TGBOT_TOKEN)
 for name, callback in _get_commands().items():
     has_args = 'args' in inspect.signature(callback).parameters
