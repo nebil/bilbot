@@ -16,8 +16,28 @@ import inspect
 import logging
 import os
 
-from telegram.ext import CommandHandler, MessageHandler, Filters, Updater
+from telegram.ext import (CommandHandler,
+                          MessageHandler,
+                          Filters,
+                          Updater,
+                          Dispatcher)
 from telegram.update import Update
+
+
+# MONKEY-PATCHING
+# ===============
+
+def _add_handlers(self):
+    # first, add all the defined commands.
+    for name, callback in _get_commands().items():
+        has_args = 'args' in inspect.signature(callback).parameters
+        command_handler = CommandHandler(name, callback, pass_args=has_args)
+        self.add_handler(command_handler)
+
+    # and then, handle the _faulty_ cases.
+    unknown_handler = MessageHandler([Filters.command], unknown)
+    self.add_handler(unknown_handler)
+Dispatcher.add_handlers = _add_handlers
 
 Update.reply = lambda self, message, **kwargs: \
     self.message.reply_text(message, **kwargs)
@@ -155,13 +175,6 @@ if __name__ == '__main__':
                         style='{')  # for enabling str.format()-style.
 
     updater = Updater(token=TGBOT_TOKEN)
-    for name, callback in _get_commands().items():
-        has_args = 'args' in inspect.signature(callback).parameters
-        command_handler = CommandHandler(name, callback, pass_args=has_args)
-        updater.dispatcher.add_handler(command_handler)
-
-    unknown_handler = MessageHandler([Filters.command], unknown)
-    updater.dispatcher.add_handler(unknown_handler)
-
+    updater.dispatcher.add_handlers()
     updater.start_polling()
     updater.idle()
