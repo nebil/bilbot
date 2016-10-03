@@ -16,7 +16,7 @@ import inspect
 import logging
 import os
 
-from telegram.ext import CommandHandler, Updater
+from telegram.ext import CommandHandler, MessageHandler, Filters, Updater
 from telegram.update import Update
 
 Update.reply = lambda self, message, **kwargs: \
@@ -116,6 +116,12 @@ def withdraw_command(bot, update, args):
         update.reply("No te entiendo, humano.")
 
 
+def unknown(bot, update):
+    update.reply("Ese comando no existe.")
+    update.reply("Escribe `/help` para obtener una lista de comandos.",
+                 parse_mode='markdown')
+
+
 # SETTINGS
 # ========
 
@@ -153,6 +159,9 @@ if __name__ == '__main__':
         has_args = 'args' in inspect.signature(callback).parameters
         command_handler = CommandHandler(name, callback, pass_args=has_args)
         updater.dispatcher.add_handler(command_handler)
+
+    unknown_handler = MessageHandler([Filters.command], unknown)
+    updater.dispatcher.add_handler(unknown_handler)
 
     updater.start_polling()
     updater.idle()
