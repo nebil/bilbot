@@ -10,14 +10,34 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 
 __AUTHOR__ = 'Nebil Kawas García'
 __LICENSE__ = 'MPL-2.0'
-__VERSION__ = '0.1.1'
+__VERSION__ = '0.1.2'
 
 import inspect
 import logging
 import os
 
-from telegram.ext import CommandHandler, Updater
+from telegram.ext import (CommandHandler,
+                          MessageHandler,
+                          Filters,
+                          Updater,
+                          Dispatcher)
 from telegram.update import Update
+
+
+# MONKEY-PATCHING
+# ===============
+
+def _add_handlers(self):
+    # first, add all the defined commands.
+    for name, callback in _get_commands().items():
+        has_args = 'args' in inspect.signature(callback).parameters
+        command_handler = CommandHandler(name, callback, pass_args=has_args)
+        self.add_handler(command_handler)
+
+    # and then, handle the _faulty_ cases.
+    unknown_handler = MessageHandler([Filters.command], unknown)
+    self.add_handler(unknown_handler)
+Dispatcher.add_handlers = _add_handlers
 
 Update.reply = lambda self, message, **kwargs: \
     self.message.reply_text(message, **kwargs)
@@ -46,7 +66,6 @@ def _get_commands():
 
 
 def _to_money(amount):
-    amount = int(amount)
     # REVIEW: should I use 'locale' configuration?
     return '{:,}'.format(amount).replace(',', '.')
 
@@ -66,39 +85,68 @@ def about_command(bot, update):
 
 
 def help_command(bot, update):
-    update.reply("Mis comandos son: "
-                 "`/about`, `/help`, `/list`, `/start`, `/withdraw`.",
-                 parse_mode='markdown')
+    command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
+    help_message = HELP_MESSAGE.format(', '.join(command_list))
+    update.reply(help_message, parse_mode='markdown')
 
 
 def list_command(bot, update):
-    update.reply("Espera un poco, haré memoria de los hechos.")
-
     def process(line):
         name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply("{} sacó ${}.".format(name, amount))
         return int(amount.replace('.', ''))
 
-    with open(ACCOUNTS, 'r') as accounts:
-        total = sum(process(line) for line in accounts)
+    try:
+        with open(ACCOUNTS, 'r') as accounts:
+            update.reply("Espera un poco, haré memoria de los hechos.")
+            total = sum(process(line) for line in accounts)
 
-    update.reply("Eso es todo lo que recuerdo.")
-    update.reply("Por cierto, esto suma un gran total de...")
-    update.reply("*{}* pesos chilenos.".format(_to_money(total)),
-                 parse_mode='markdown')
+            update.reply("Eso es todo lo que recuerdo.")
+            update.reply("Por cierto, esto suma un gran total de...")
+            update.reply("*{}* pesos chilenos.".format(_to_money(total)),
+                         parse_mode='markdown')
+    except FileNotFoundError:
+        update.reply("No hay registros disponibles.")
 
 
 def withdraw_command(bot, update, args):
-    amount = _to_money(args[0])
-    first_name = update.message.from_user.first_name
-    message = "¿Estás seguro de que deseas retirar *{}* pesos del quiosco, {}?"
-    update.reply(message.format(amount, first_name))
+    if len(args) == 0:
+        update.reply("Debes agregar el monto, terrícola.")
+    elif len(args) == 1:
+        try:
+            amount = int(args[0])
+            if amount < 1:
+                update.reply("El argumento debe ser estrictamente positivo.")
+            else:
+                amount = _to_money(amount)
+                first_name = update.message.from_user.first_name
+                message = ("¿Estás seguro de que deseas retirar *{}* pesos "
+                           "del quiosco, {}?")
+                update.reply(message.format(amount, first_name))
 
-    with open(ACCOUNTS, 'a') as accounts:
-        record = "{}{}{}\n".format(first_name, FIELD_DELIMITER, amount)
-        accounts.write(record)
+                with open(ACCOUNTS, 'a') as accounts:
+                    record = "{}{}{}\n".format(first_name, FIELD_DELIMITER,
+                                               amount)
+                    accounts.write(record)
 
-    update.reply("En realidad, da lo mismo: ya hice la operación.")
+                update.reply("En realidad, da lo mismo: ya hice la operación.")
+        except ValueError:
+            update.reply("El monto es inválido.")
+    else:
+        update.reply("No te entiendo, humano.")
+
+
+def unknown(bot, update):
+    update.reply("Ese comando no existe.")
+    update.reply("Escribe `/help` para obtener una lista de comandos.",
+                 parse_mode='markdown')
+
+
+# TEMPLATES
+# =========
+
+CMD_TEMPLATE = "`/{}`"
+HELP_MESSAGE = "Mis comandos son: {}."
 
 
 # SETTINGS
@@ -134,10 +182,6 @@ if __name__ == '__main__':
                         style='{')  # for enabling str.format()-style.
 
     updater = Updater(token=TGBOT_TOKEN)
-    for name, callback in _get_commands().items():
-        has_args = 'args' in inspect.signature(callback).parameters
-        command_handler = CommandHandler(name, callback, pass_args=has_args)
-        updater.dispatcher.add_handler(command_handler)
-
+    updater.dispatcher.add_handlers()
     updater.start_polling()
     updater.idle()
