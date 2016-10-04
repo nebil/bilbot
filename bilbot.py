@@ -85,9 +85,9 @@ def about_command(bot, update):
 
 
 def help_command(bot, update):
-    update.reply("Mis comandos son: "
-                 "`/about`, `/help`, `/list`, `/start`, `/withdraw`.",
-                 parse_mode='markdown')
+    command_list = ('`/{}`'.format(cmd) for cmd in sorted(_get_commands()))
+    help_message = "Mis comandos son: {}.".format(', '.join(command_list))
+    update.reply(help_message, parse_mode='markdown')
 
 
 def list_command(bot, update):
