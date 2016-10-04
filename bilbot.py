@@ -85,8 +85,8 @@ def about_command(bot, update):
 
 
 def help_command(bot, update):
-    command_list = ('`/{}`'.format(cmd) for cmd in sorted(_get_commands()))
-    help_message = "Mis comandos son: {}.".format(', '.join(command_list))
+    command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
+    help_message = HELP_MESSAGE.format(', '.join(command_list))
     update.reply(help_message, parse_mode='markdown')
 
 
@@ -140,6 +140,13 @@ def unknown(bot, update):
     update.reply("Ese comando no existe.")
     update.reply("Escribe `/help` para obtener una lista de comandos.",
                  parse_mode='markdown')
+
+
+# TEMPLATES
+# =========
+
+CMD_TEMPLATE = "`/{}`"
+HELP_MESSAGE = "Mis comandos son: {}."
 
 
 # SETTINGS
