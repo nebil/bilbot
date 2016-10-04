@@ -97,14 +97,17 @@ def list_command(bot, update):
         return int(amount.replace('.', ''))
 
     try:
-        with open(ACCOUNTS, 'r') as accounts:
-            update.reply("Espera un poco, haré memoria de los hechos.")
-            total = sum(process(line) for line in accounts)
+        if os.path.getsize(ACCOUNTS):
+            with open(ACCOUNTS, 'r') as accounts:
+                update.reply("Espera un poco, haré memoria de los hechos.")
+                total = sum(process(line) for line in accounts)
 
-            update.reply("Eso es todo lo que recuerdo.")
-            update.reply("Por cierto, esto suma un gran total de...")
-            update.reply("*{}* pesos chilenos.".format(_to_money(total)),
-                         parse_mode='markdown')
+                update.reply("Eso es todo lo que recuerdo.")
+                update.reply("Por cierto, esto suma un gran total de...")
+                update.reply("*{}* pesos chilenos.".format(_to_money(total)),
+                             parse_mode='markdown')
+        else:
+            update.reply("No hay registros disponibles.")
     except FileNotFoundError:
         update.reply("No hay registros disponibles.")
 
