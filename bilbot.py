@@ -92,9 +92,9 @@ def start_command(bot, update):
 
 @logger
 def about_command(bot, update):
-    update.reply("Hola, mi nombre es Nebilbot.")
-    update.reply("Pero también me puedes llamar Bilbot.")
-    update.reply("Mi versión es `{}`.".format(__VERSION__),
+    update.reply("Hola, mi nombre es Nebilbot.\n"
+                 "Pero también me puedes llamar Bilbot.\n"
+                 "Mi versión es `{}`.".format(__VERSION__),
                  parse_mode='markdown')
 
 
@@ -112,17 +112,20 @@ def list_command(bot, update):
 
     def process(line):
         name, amount = line.rstrip().split(FIELD_DELIMITER)
-        update.reply("{} sacó ${}.".format(name, amount))
-        return int(amount.replace('.', ''))
+        message = "{} sacó ${}.".format(name, amount)
+        return int(amount.replace('.', '')), message
 
     if is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'r') as accounts:
-            update.reply("Espera un poco, haré memoria de los hechos.")
-            total = sum(process(line) for line in accounts)
-
-            update.reply("Eso es todo lo que recuerdo.")
-            update.reply("Por cierto, esto suma un gran total de...")
-            update.reply("*{}* pesos chilenos.".format(_to_money(total)),
+            lines = [process(line) for line in accounts]
+            total = sum(amount for amount, _ in lines)
+            message = '\n'.join(message for _, message in lines)
+            update.reply("Espera un poco, haré memoria de los hechos.\n"
+                         "{}\n"
+                         "Eso es todo lo que recuerdo.\n"
+                         "Por cierto, esto suma un gran total de...\n"
+                         "*{}* pesos chilenos."
+                         .format(message, _to_money(total)),
                          parse_mode='markdown')
     else:
         update.reply(ERROR.NO_STORED_ACCOUNTS)
@@ -142,10 +145,10 @@ def withdraw_command(bot, update, args):
             amount = _to_money(amount)
             first_name = update.message.from_user.first_name
             message = ("¿Estás seguro de que deseas retirar *{}* pesos "
-                       "del quiosco, {}?")
+                       "del quiosco, {}?\n"
+                       "En realidad, da lo mismo: ya hice la operación.")
             update.reply(message.format(amount, first_name))
             add_record(first_name, amount)
-            update.reply("En realidad, da lo mismo: ya hice la operación.")
 
     if len(args) == 0:
         update.reply(ERROR.MISSING_AMOUNT)
@@ -162,10 +165,9 @@ def withdraw_command(bot, update, args):
 
 def unknown(bot, update):
     unknown_command, *_ = update.message.text.split()
-    update.reply("El comando `{}` no existe.".format(unknown_command),
-                 parse_mode='markdown')
-    update.reply("Escribe `/help` para obtener una lista de comandos.",
-                 parse_mode='markdown')
+    update.reply("El comando `{}` no existe.\n"
+                 "Escribe `/help` para obtener una lista de comandos."
+                 .format(unknown_command), parse_mode='markdown')
 
 
 # EXCEPTIONS
