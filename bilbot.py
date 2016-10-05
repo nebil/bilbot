@@ -166,6 +166,13 @@ def unknown(bot, update):
                  parse_mode='markdown')
 
 
+# EXCEPTIONS
+# ==========
+
+MISSING_TOKEN = ("\nThe bot token is missing."
+                 "\nPlease, declare the token in the configuration file.")
+
+
 # TEMPLATES
 # =========
 
@@ -190,8 +197,7 @@ with open(SELECTED_CONFIG) as cfgfile:
     TGBOT_TOKEN = CONFIG_DICT.get('bot_token')
 
     if not TGBOT_TOKEN:
-        raise Exception("\nThe bot token is missing."
-                        "\nDeclare the token in the configuration file.")
+        raise Exception(MISSING_TOKEN)
 
 
 if __name__ == '__main__':
