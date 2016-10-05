@@ -128,28 +128,32 @@ def list_command(bot, update):
 
 @logger
 def withdraw_command(bot, update, args):
+    def add_record(name, amount):
+        with open(ACCOUNTS, 'a') as accounts:
+            record = "{}{}{}\n".format(name, FIELD_DELIMITER, amount)
+            accounts.write(record)
+
+    def withdraw(amount):
+        if amount < 1:
+            update.reply("El argumento debe ser estrictamente positivo.")
+        else:
+            amount = _to_money(amount)
+            first_name = update.message.from_user.first_name
+            message = ("¿Estás seguro de que deseas retirar *{}* pesos "
+                       "del quiosco, {}?")
+            update.reply(message.format(amount, first_name))
+            add_record(first_name, amount)
+            update.reply("En realidad, da lo mismo: ya hice la operación.")
+
     if len(args) == 0:
         update.reply("Debes agregar el monto, terrícola.")
     elif len(args) == 1:
         try:
             amount = int(args[0])
-            if amount < 1:
-                update.reply("El argumento debe ser estrictamente positivo.")
-            else:
-                amount = _to_money(amount)
-                first_name = update.message.from_user.first_name
-                message = ("¿Estás seguro de que deseas retirar *{}* pesos "
-                           "del quiosco, {}?")
-                update.reply(message.format(amount, first_name))
-
-                with open(ACCOUNTS, 'a') as accounts:
-                    record = "{}{}{}\n".format(first_name, FIELD_DELIMITER,
-                                               amount)
-                    accounts.write(record)
-
-                update.reply("En realidad, da lo mismo: ya hice la operación.")
         except ValueError:
             update.reply("El monto es inválido.")
+        else:
+            withdraw(amount)
     else:
         update.reply("No te entiendo, humano.")
 
