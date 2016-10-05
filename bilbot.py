@@ -140,7 +140,9 @@ def withdraw_command(bot, update, args):
 
 
 def unknown(bot, update):
-    update.reply("Ese comando no existe.")
+    unknown_command, *_ = update.message.text.split()
+    update.reply("El comando `{}` no existe.".format(unknown_command),
+                 parse_mode='markdown')
     update.reply("Escribe `/help` para obtener una lista de comandos.",
                  parse_mode='markdown')
 
