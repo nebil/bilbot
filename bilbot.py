@@ -123,7 +123,7 @@ def list_command(bot, update):
             update.reply("*{}* pesos chilenos.".format(_to_money(total)),
                          parse_mode='markdown')
     else:
-        update.reply("No hay registros disponibles.")
+        update.reply(ERROR['NO_STORED_ACCOUNTS'])
 
 
 @logger
@@ -135,7 +135,7 @@ def withdraw_command(bot, update, args):
 
     def withdraw(amount):
         if amount < 1:
-            update.reply("El argumento debe ser estrictamente positivo.")
+            update.reply(ERROR['NONPOSITIVE_AMOUNT'])
         else:
             amount = _to_money(amount)
             first_name = update.message.from_user.first_name
@@ -146,16 +146,16 @@ def withdraw_command(bot, update, args):
             update.reply("En realidad, da lo mismo: ya hice la operación.")
 
     if len(args) == 0:
-        update.reply("Debes agregar el monto, terrícola.")
+        update.reply(ERROR['MISSING_AMOUNT'])
     elif len(args) == 1:
         try:
             amount = int(args[0])
         except ValueError:
-            update.reply("El monto es inválido.")
+            update.reply(ERROR['UNSOUND_AMOUNT'])
         else:
             withdraw(amount)
     else:
-        update.reply("No te entiendo, humano.")
+        update.reply(ERROR['TOO_MANY_ARGUMENTS'])
 
 
 def unknown(bot, update):
@@ -171,6 +171,18 @@ def unknown(bot, update):
 
 MISSING_TOKEN = ("\nThe bot token is missing."
                  "\nPlease, declare the token in the configuration file.")
+
+
+# ERROR MESSAGES
+# ===== ========
+
+ERROR = {
+    'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
+    'UNSOUND_AMOUNT':     "El monto es inválido.",
+    'TOO_MANY_ARGUMENTS': "No te entiendo, humano.",
+    'NONPOSITIVE_AMOUNT': "El argumento debe ser estrictamente positivo.",
+    'NO_STORED_ACCOUNTS': "No hay registros disponibles.",
+}
 
 
 # TEMPLATES
