@@ -15,6 +15,8 @@ __VERSION__ = '0.1.2'
 import inspect
 import logging
 import os
+
+from argparse import Namespace
 from functools import wraps
 
 from telegram.ext import (CommandHandler,
@@ -123,7 +125,7 @@ def list_command(bot, update):
             update.reply("*{}* pesos chilenos.".format(_to_money(total)),
                          parse_mode='markdown')
     else:
-        update.reply(ERROR['NO_STORED_ACCOUNTS'])
+        update.reply(ERROR.NO_STORED_ACCOUNTS)
 
 
 @logger
@@ -135,7 +137,7 @@ def withdraw_command(bot, update, args):
 
     def withdraw(amount):
         if amount < 1:
-            update.reply(ERROR['NONPOSITIVE_AMOUNT'])
+            update.reply(ERROR.NONPOSITIVE_AMOUNT)
         else:
             amount = _to_money(amount)
             first_name = update.message.from_user.first_name
@@ -146,16 +148,16 @@ def withdraw_command(bot, update, args):
             update.reply("En realidad, da lo mismo: ya hice la operación.")
 
     if len(args) == 0:
-        update.reply(ERROR['MISSING_AMOUNT'])
+        update.reply(ERROR.MISSING_AMOUNT)
     elif len(args) == 1:
         try:
             amount = int(args[0])
         except ValueError:
-            update.reply(ERROR['UNSOUND_AMOUNT'])
+            update.reply(ERROR.UNSOUND_AMOUNT)
         else:
             withdraw(amount)
     else:
-        update.reply(ERROR['TOO_MANY_ARGUMENTS'])
+        update.reply(ERROR.TOO_MANY_ARGUMENTS)
 
 
 def unknown(bot, update):
@@ -176,13 +178,13 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 # ERROR MESSAGES
 # ===== ========
 
-ERROR = {
+ERROR = Namespace(**{
     'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
     'UNSOUND_AMOUNT':     "El monto es inválido.",
     'TOO_MANY_ARGUMENTS': "No te entiendo, humano.",
     'NONPOSITIVE_AMOUNT': "El argumento debe ser estrictamente positivo.",
     'NO_STORED_ACCOUNTS': "No hay registros disponibles.",
-}
+})
 
 
 # TEMPLATES
