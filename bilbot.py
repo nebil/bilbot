@@ -15,6 +15,7 @@ __VERSION__ = '0.1.2'
 import inspect
 import logging
 import os
+from functools import wraps
 
 from telegram.ext import (CommandHandler,
                           MessageHandler,
@@ -46,6 +47,15 @@ Update.reply = lambda self, message, **kwargs: \
 # USEFUL FUNCTIONS
 # ====== =========
 
+def logger(command):
+    @wraps(command)
+    def wrapper(bot, update, **kwargs):
+        command(bot, update, **kwargs)
+        caller = update.message.from_user.first_name
+        logging.info("{} called {}.".format(caller, command.__name__))
+    return wrapper
+
+
 def _select_filename(basename):
     def get_fullpath(filename):
         current_dirname = os.path.dirname(os.path.realpath(__file__))
@@ -73,36 +83,28 @@ def _to_money(amount):
 # COMMANDS
 # ========
 
+@logger
 def start_command(bot, update):
-    caller = update.message.from_user.first_name
-    logging.info("{} called {} command.".format(caller, "/start"))
-
     update.reply("Bilbot, operativo.")
 
 
+@logger
 def about_command(bot, update):
-    caller = update.message.from_user.first_name
-    logging.info("{} called {} command.".format(caller, "/about"))
-
     update.reply("Hola, mi nombre es Nebilbot.")
     update.reply("Pero también me puedes llamar Bilbot.")
     update.reply("Mi versión es `{}`.".format(__VERSION__),
                  parse_mode='markdown')
 
 
+@logger
 def help_command(bot, update):
-    caller = update.message.from_user.first_name
-    logging.info("{} called {} command.".format(caller, "/help"))
-
     command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
     help_message = HELP_MESSAGE.format(', '.join(command_list))
     update.reply(help_message, parse_mode='markdown')
 
 
+@logger
 def list_command(bot, update):
-    caller = update.message.from_user.first_name
-    logging.info("{} called {} command.".format(caller, "/list"))
-
     def is_not_empty(filepath):
         return os.path.isfile(filepath) and os.path.getsize(filepath)
 
@@ -124,10 +126,8 @@ def list_command(bot, update):
         update.reply("No hay registros disponibles.")
 
 
+@logger
 def withdraw_command(bot, update, args):
-    caller = update.message.from_user.first_name
-    logging.info("{} called {} command.".format(caller, "/withdraw"))
-
     if len(args) == 0:
         update.reply("Debes agregar el monto, terrícola.")
     elif len(args) == 1:
