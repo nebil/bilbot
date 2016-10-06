@@ -79,7 +79,7 @@ def logger(command):
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
         caller = update.message.from_user.first_name
-        logging.info("{} called {}.".format(caller, command.__name__))
+        logging.info(LOG_TEMPLATE.format(caller, command.__name__))
     return wrapper
 
 
@@ -159,7 +159,7 @@ def list_command(update):
 def withdraw_command(update, args):
     def add_record(name, amount):
         with open(ACCOUNTS, 'a') as accounts:
-            record = "{}{}{}\n".format(name, FIELD_DELIMITER, amount)
+            record = REC_TEMPLATE.format(name, FIELD_DELIMITER, amount)
             accounts.write(record)
 
     def withdraw(amount):
@@ -218,6 +218,8 @@ ERROR = Namespace(**{
 # =========
 
 CMD_TEMPLATE = "`/{}`"
+LOG_TEMPLATE = "{} called {}."
+REC_TEMPLATE = "{}{}{}\n"
 HELP_MESSAGE = "Mis comandos son: {}."
 
 
