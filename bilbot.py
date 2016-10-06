@@ -77,7 +77,7 @@ Update.send = _send
 def logger(command):
     @wraps(command)
     def wrapper(bot, update, **kwargs):
-        command(bot, update, **kwargs)
+        command(     update, **kwargs)
         caller = update.message.from_user.first_name
         logging.info("{} called {}.".format(caller, command.__name__))
     return wrapper
@@ -111,13 +111,13 @@ def _to_money(amount):
 # ========
 
 @logger
-def start_command(bot, update):
+def start_command(update):
     update.reply("Bilbot, operativo.")
     update.send()
 
 
 @logger
-def about_command(bot, update):
+def about_command(update):
     update.reply("Hola, mi nombre es Nebilbot.")
     update.reply("Pero también me puedes llamar Bilbot.")
     update.reply("Mi versión es `{}`.".format(__VERSION__))
@@ -125,7 +125,7 @@ def about_command(bot, update):
 
 
 @logger
-def help_command(bot, update):
+def help_command(update):
     command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
     help_message = HELP_MESSAGE.format(', '.join(command_list))
     update.reply(help_message)
@@ -133,7 +133,7 @@ def help_command(bot, update):
 
 
 @logger
-def list_command(bot, update):
+def list_command(update):
     def is_not_empty(filepath):
         return os.path.isfile(filepath) and os.path.getsize(filepath)
 
@@ -156,7 +156,7 @@ def list_command(bot, update):
 
 
 @logger
-def withdraw_command(bot, update, args):
+def withdraw_command(update, args):
     def add_record(name, amount):
         with open(ACCOUNTS, 'a') as accounts:
             record = "{}{}{}\n".format(name, FIELD_DELIMITER, amount)
