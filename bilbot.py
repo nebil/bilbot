@@ -78,8 +78,9 @@ def logger(command):
     @wraps(command)
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
-        caller = update.message.from_user.first_name
-        logging.info(LOG_TEMPLATE.format(caller, command.__name__))
+        message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
+                                      command=command.__name__)
+        logging.info(message)
     return wrapper
 
 
@@ -127,7 +128,7 @@ def about_command(update):
 @logger
 def help_command(update):
     command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
-    help_message = HELP_MESSAGE.format(', '.join(command_list))
+    help_message = HELP_MESSAGE.format(commands=', '.join(command_list))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
@@ -159,7 +160,9 @@ def list_command(update):
 def withdraw_command(update, args):
     def add_record(name, amount):
         with open(ACCOUNTS, 'a') as accounts:
-            record = REC_TEMPLATE.format(name, FIELD_DELIMITER, amount)
+            record = REC_TEMPLATE.format(user=name,
+                                         delimiter=FIELD_DELIMITER,
+                                         amount=amount)
             accounts.write(record)
 
     def withdraw(amount):
@@ -218,9 +221,9 @@ ERROR = Namespace(**{
 # =========
 
 CMD_TEMPLATE = "`/{}`"
-LOG_TEMPLATE = "{} called {}."
-REC_TEMPLATE = "{}{}{}\n"
-HELP_MESSAGE = "Mis comandos son: {}."
+LOG_TEMPLATE = "{user} called {command}."
+REC_TEMPLATE = "{user}{delimiter}{amount}\n"
+HELP_MESSAGE = "Mis comandos son: {commands}."
 
 
 # SETTINGS
