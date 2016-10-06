@@ -42,7 +42,27 @@ def _add_handlers(self):
     self.add_handler(unknown_handler)
 Dispatcher.add_handlers = _add_handlers
 
-Update.reply = lambda self, message: self.buffer.append(message)
+
+def _reply(self, message):
+    # using a 'LBYL' approach.
+
+    # if hasattr(self, 'buffer'):
+    #     self.buffer.append(message)
+    # else:
+    #     self.buffer = [message]
+
+    # using a 'EAFP' approach.
+
+    # try:
+    #     self.buffer.append(message)
+    # except AttributeError:
+    #     self.buffer = [message]
+
+    # finally, using a smoother approach. :-)
+
+    self.buffer = getattr(self, 'buffer', [])
+    self.buffer.append(message)
+Update.reply = _reply
 
 
 def _send(self, **kwargs):
@@ -92,14 +112,12 @@ def _to_money(amount):
 
 @logger
 def start_command(bot, update):
-    update.buffer = []
     update.reply("Bilbot, operativo.")
     update.send()
 
 
 @logger
 def about_command(bot, update):
-    update.buffer = []
     update.reply("Hola, mi nombre es Nebilbot.")
     update.reply("Pero también me puedes llamar Bilbot.")
     update.reply("Mi versión es `{}`.".format(__VERSION__))
@@ -108,7 +126,6 @@ def about_command(bot, update):
 
 @logger
 def help_command(bot, update):
-    update.buffer = []
     command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
     help_message = HELP_MESSAGE.format(', '.join(command_list))
     update.reply(help_message)
@@ -125,7 +142,6 @@ def list_command(bot, update):
         update.reply("{} sacó ${}.".format(name, amount))
         return int(amount.replace('.', ''))
 
-    update.buffer = []
     if is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'r') as accounts:
             update.reply("Espera un poco, haré memoria de los hechos.")
@@ -158,7 +174,6 @@ def withdraw_command(bot, update, args):
             add_record(first_name, amount)
             update.reply("En realidad, da lo mismo: ya hice la operación.")
 
-    update.buffer = []
     if len(args) == 0:
         update.reply(ERROR.MISSING_AMOUNT)
     elif len(args) == 1:
@@ -174,7 +189,6 @@ def withdraw_command(bot, update, args):
 
 
 def unknown(bot, update):
-    update.buffer = []
     unknown_command, *_ = update.message.text.split()
     update.reply("El comando `{}` no existe.".format(unknown_command))
     update.reply("Escribe `/help` para obtener una lista de comandos.")
