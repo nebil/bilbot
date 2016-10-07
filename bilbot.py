@@ -113,15 +113,13 @@ def _to_money(amount):
 
 @logger
 def start_command(update):
-    update.reply("Bilbot, operativo.")
+    update.reply(INFO.START)
     update.send()
 
 
 @logger
 def about_command(update):
-    update.reply("Hola, mi nombre es Nebilbot.")
-    update.reply("Pero también me puedes llamar Bilbot.")
-    update.reply("Mi versión es `{}`.".format(__VERSION__))
+    update.reply(INFO.ABOUT.format(version=__VERSION__))
     update.send(parse_mode='markdown')
 
 
@@ -140,17 +138,14 @@ def list_command(update):
 
     def process(line):
         name, amount = line.rstrip().split(FIELD_DELIMITER)
-        update.reply("{} sacó ${}.".format(name, amount))
+        update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
 
     if is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'r') as accounts:
-            update.reply("Espera un poco, haré memoria de los hechos.")
+            update.reply(INFO.ANTE_LIST)
             total = sum(process(line) for line in accounts)
-
-            update.reply("Eso es todo lo que recuerdo.")
-            update.reply("Por cierto, esto suma un gran total de...")
-            update.reply("*{}* pesos chilenos.".format(_to_money(total)))
+            update.reply(INFO.POST_LIST.format(amount=_to_money(total)))
     else:
         update.reply(ERROR.NO_STORED_ACCOUNTS)
     update.send(parse_mode='markdown')
@@ -171,11 +166,10 @@ def withdraw_command(update, args):
         else:
             amount = _to_money(amount)
             first_name = update.message.from_user.first_name
-            message = ("¿Estás seguro de que deseas retirar *{}* pesos "
-                       "del quiosco, {}?")
-            update.reply(message.format(amount, first_name))
+            message = INFO.ANTE_WITHDRAW.format(amount=amount, user=first_name)
+            update.reply(message)
             add_record(first_name, amount)
-            update.reply("En realidad, da lo mismo: ya hice la operación.")
+            update.reply(INFO.POST_WITHDRAW)
 
     if len(args) == 0:
         update.reply(ERROR.MISSING_AMOUNT)
@@ -193,8 +187,7 @@ def withdraw_command(update, args):
 
 def unknown(bot, update):
     unknown_command, *_ = update.message.text.split()
-    update.reply("El comando `{}` no existe.".format(unknown_command))
-    update.reply("Escribe `/help` para obtener una lista de comandos.")
+    update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
 
 
@@ -214,6 +207,32 @@ ERROR = Namespace(**{
     'TOO_MANY_ARGUMENTS': "No te entiendo, humano.",
     'NONPOSITIVE_AMOUNT': "El argumento debe ser estrictamente positivo.",
     'NO_STORED_ACCOUNTS': "No hay registros disponibles.",
+
+    'UNKNOWN_COMMAND': "El comando `{command}` no existe.\n"
+                       "Escribe `/help` para obtener una lista de comandos.",
+})
+
+
+# INFO MESSAGES
+# ==== ========
+
+INFO = Namespace(**{
+    'START': "Bilbot, operativo.",
+    'ABOUT': "Hola, mi nombre es Nebilbot.\n"
+             "Pero también me puedes llamar Bilbot.\n"
+             "Mi versión es `{version}`.",
+
+    # from Latin: 'ante' --> before,
+    #             'post' --> after.
+    'ANTE_WITHDRAW': "¿Estás seguro de que deseas retirar *{amount}* pesos "
+                     "del quiosco, {user}?",
+    'POST_WITHDRAW': "En realidad, da lo mismo: ya hice la operación.",
+
+    'ANTE_LIST': "Espera un poco, haré memoria de los hechos.",
+    'EACH_LIST': "{user} sacó ${amount}.",
+    'POST_LIST': "Eso es todo lo que recuerdo.\n"
+                 "Por cierto, esto suma un gran total de...\n"
+                 "*{amount}* pesos chilenos.",
 })
 
 
