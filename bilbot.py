@@ -18,6 +18,7 @@ import os
 
 from argparse import Namespace
 from functools import wraps
+from textwrap import dedent
 
 from telegram.ext import (CommandHandler,
                           MessageHandler,
@@ -208,8 +209,10 @@ ERROR = Namespace(**{
     'NONPOSITIVE_AMOUNT': "El argumento debe ser estrictamente positivo.",
     'NO_STORED_ACCOUNTS': "No hay registros disponibles.",
 
-    'UNKNOWN_COMMAND': "El comando `{command}` no existe.\n"
-                       "Escribe `/help` para obtener una lista de comandos.",
+    'UNKNOWN_COMMAND': dedent("""
+                       El comando `{command}` no existe.
+                       Escribe `/help` para obtener una lista de comandos.
+                       """),
 })
 
 
@@ -218,9 +221,11 @@ ERROR = Namespace(**{
 
 INFO = Namespace(**{
     'START': "Bilbot, operativo.",
-    'ABOUT': "Hola, mi nombre es Nebilbot.\n"
-             "Pero también me puedes llamar Bilbot.\n"
-             "Mi versión es `{version}`.",
+    'ABOUT': dedent("""
+             Hola, mi nombre es Nebilbot.
+             Pero también me puedes llamar Bilbot.
+             Mi versión es `{version}`.
+             """),
 
     # from Latin: 'ante' --> before,
     #             'post' --> after.
@@ -230,9 +235,11 @@ INFO = Namespace(**{
 
     'ANTE_LIST': "Espera un poco, haré memoria de los hechos.",
     'EACH_LIST': "{user} sacó ${amount}.",
-    'POST_LIST': "Eso es todo lo que recuerdo.\n"
-                 "Por cierto, esto suma un gran total de...\n"
-                 "*{amount}* pesos chilenos.",
+    'POST_LIST': dedent("""
+                 Eso es todo lo que recuerdo.
+                 Por cierto, esto suma un gran total de...
+                 *{amount}* pesos chilenos.
+                 """),
 })
 
 
