@@ -85,6 +85,10 @@ def logger(command):
     return wrapper
 
 
+def _is_not_empty(filepath):
+    return os.path.isfile(filepath) and os.path.getsize(filepath)
+
+
 def _select_filename(basename):
     def get_fullpath(filename):
         current_dirname = os.path.dirname(os.path.realpath(__file__))
@@ -134,15 +138,12 @@ def help_command(update):
 
 @logger
 def list_command(update):
-    def is_not_empty(filepath):
-        return os.path.isfile(filepath) and os.path.getsize(filepath)
-
     def process(line):
         name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
 
-    if is_not_empty(ACCOUNTS):
+    if _is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'r') as accounts:
             update.reply(INFO.ANTE_LIST)
             total = sum(process(line) for line in accounts)
@@ -188,23 +189,28 @@ def withdraw_command(update, args):
 
 @logger
 def rollback_command(update):
-    lines = open(ACCOUNTS, 'r').readlines()
-    with open(ACCOUNTS, 'w') as accounts:
-        accounts.writelines(lines[:-1])
-
-    update.reply(INFO.POST_ROLLBACK)
+    if _is_not_empty(ACCOUNTS):
+        lines = open(ACCOUNTS, 'r').readlines()
+        with open(ACCOUNTS, 'w') as accounts:
+            accounts.writelines(lines[:-1])
+        update.reply(INFO.POST_ROLLBACK)
+    else:
+        update.reply(ERROR.NO_STORED_ACCOUNTS)
     update.send()
 
 
 @logger
 def clear_command(update):
-    with open(ACCOUNTS, 'w'):
-        pass
+    if _is_not_empty(ACCOUNTS):
+        with open(ACCOUNTS, 'w'):
+            pass
 
-    # NOTE: I could also write...
-    # open(ACCOUNTS, 'w').close()
+        # NOTE: I could also write...
+        # open(ACCOUNTS, 'w').close()
 
-    update.reply(INFO.POST_CLEAR)
+        update.reply(INFO.POST_CLEAR)
+    else:
+        update.reply(ERROR.NO_STORED_ACCOUNTS)
     update.send()
 
 
