@@ -187,6 +187,16 @@ def withdraw_command(update, args):
 
 
 @logger
+def rollback_command(update):
+    lines = open(ACCOUNTS, 'r').readlines()
+    with open(ACCOUNTS, 'w') as accounts:
+        accounts.writelines(lines[:-1])
+
+    update.reply(INFO.POST_ROLLBACK)
+    update.send()
+
+
+@logger
 def clear_command(update):
     with open(ACCOUNTS, 'w'):
         pass
@@ -246,6 +256,7 @@ INFO = Namespace(**{
     'ANTE_WITHDRAW': "¿Estás seguro de que deseas retirar *{amount}* pesos "
                      "del quiosco, {user}?",
     'POST_WITHDRAW': "En realidad, da lo mismo: ya hice la operación.",
+    'POST_ROLLBACK': "Estamos listos: ya revertí la última operación.",
 
     'ANTE_LIST': "Espera un poco, haré memoria de los hechos.",
     'EACH_LIST': "{user} sacó ${amount}.",
