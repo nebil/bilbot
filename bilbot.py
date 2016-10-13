@@ -186,6 +186,18 @@ def withdraw_command(update, args):
     update.send(parse_mode='markdown')
 
 
+@logger
+def clear_command(update):
+    with open(ACCOUNTS, 'w'):
+        pass
+
+    # NOTE: I could also write...
+    # open(ACCOUNTS, 'w').close()
+
+    update.reply(INFO.POST_CLEAR)
+    update.send()
+
+
 def unknown(bot, update):
     unknown_command, *_ = update.message.text.split()
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
@@ -229,6 +241,8 @@ INFO = Namespace(**{
 
     # from Latin: 'ante' --> before,
     #             'post' --> after.
+    'POST_CLEAR': "Todo listo: he eliminado cualquier rastro de registros.",
+
     'ANTE_WITHDRAW': "¿Estás seguro de que deseas retirar *{amount}* pesos "
                      "del quiosco, {user}?",
     'POST_WITHDRAW': "En realidad, da lo mismo: ya hice la operación.",
