@@ -128,6 +128,10 @@ def start_command(update):
 
 @logger
 def about_command(update, args):
+    """
+    Conoce algo sobre mí.
+    """
+
     if len(args) == 0:
         update.reply(INFO.ABOUT.format(version=__VERSION__))
     elif len(args) == 1:
@@ -146,6 +150,10 @@ def about_command(update, args):
 
 @logger
 def help_command(update):
+    """
+    Recibe (un poco de) ayuda.
+    """
+
     def format_(name, function):
         docstring = inspect.getdoc(function)
         return CMD_TEMPLATE.format(command=name, description=docstring)
@@ -158,6 +166,10 @@ def help_command(update):
 
 @logger
 def list_command(update):
+    """
+    Muestra todos los registros.
+    """
+
     def process(line):
         name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
@@ -175,6 +187,10 @@ def list_command(update):
 
 @logger
 def withdraw_command(update, args):
+    """
+    Agrega un nuevo registro.
+    """
+
     def add_record(name, amount):
         with open(ACCOUNTS, 'a') as accounts:
             record = REC_TEMPLATE.format(user=name,
@@ -209,6 +225,10 @@ def withdraw_command(update, args):
 
 @logger
 def rollback_command(update):
+    """
+    Borra el registro más nuevo.
+    """
+
     if _is_not_empty(ACCOUNTS):
         lines = open(ACCOUNTS, 'r').readlines()
         with open(ACCOUNTS, 'w') as accounts:
@@ -221,6 +241,10 @@ def rollback_command(update):
 
 @logger
 def clear_command(update):
+    """
+    Elimina todos los registros.
+    """
+
     if _is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'w'):
             pass
@@ -235,6 +259,10 @@ def clear_command(update):
 
 
 def unknown(bot, update):
+    """
+    Handle (almost) all the nonexistent commands.
+    """
+
     unknown_command, *_ = update.message.text.split()
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
