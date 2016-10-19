@@ -159,7 +159,7 @@ def help_command(update):
         return CMD_TEMPLATE.format(command=name, description=docstring)
 
     commands = (format_(name, cmd) for name, cmd in _get_commands().items())
-    help_message = HELP_MESSAGE.format(commands='\n'.join(sorted(commands)))
+    help_message = INFO.HELP.format(commands='\n'.join(sorted(commands)))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
@@ -310,6 +310,10 @@ INFO = Namespace(**{
                       Puedes, además, escribir `/about <versión>`,
                       para recibir el _changelog_ de esta versión.
                       """),
+    'HELP': dedent("""
+            Mis comandos son:
+            {commands}
+            """),
 
     # from Latin: 'ante' --> before,
     #             'post' --> after.
@@ -385,10 +389,6 @@ CMD_TEMPLATE = "`{command}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{user}{delimiter}{amount}\n"
 VER_TEMPLATE = '📦 `{}`'
-HELP_MESSAGE = """
-Mis comandos son:
-{commands}
-"""
 
 
 # SETTINGS
