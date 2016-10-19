@@ -118,6 +118,10 @@ def _to_money(amount):
 
 @logger
 def start_command(update):
+    """
+    Enciende a `nebilbot`.
+    """
+
     update.reply(INFO.START)
     update.send()
 
@@ -142,8 +146,12 @@ def about_command(update, args):
 
 @logger
 def help_command(update):
-    command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
-    help_message = HELP_MESSAGE.format(commands=', '.join(command_list))
+    def format_(name, function):
+        docstring = inspect.getdoc(function)
+        return CMD_TEMPLATE.format(command=name, description=docstring)
+
+    commands = (format_(name, cmd) for name, cmd in _get_commands().items())
+    help_message = HELP_MESSAGE.format(commands='\n'.join(sorted(commands)))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
@@ -345,11 +353,14 @@ RELEASES = {
 # TEMPLATES
 # =========
 
-CMD_TEMPLATE = "`/{}`"
+CMD_TEMPLATE = "`{command}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{user}{delimiter}{amount}\n"
 VER_TEMPLATE = '📦 `{}`'
-HELP_MESSAGE = "Mis comandos son: {commands}."
+HELP_MESSAGE = """
+Mis comandos son:
+{commands}
+"""
 
 
 # SETTINGS
