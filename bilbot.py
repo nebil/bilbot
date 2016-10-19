@@ -123,8 +123,20 @@ def start_command(update):
 
 
 @logger
-def about_command(update):
-    update.reply(INFO.ABOUT.format(version=__VERSION__))
+def about_command(update, args):
+    if len(args) == 0:
+        update.reply(INFO.ABOUT.format(version=__VERSION__))
+    elif len(args) == 1:
+        argument = args[0]
+        if argument == 'releases':
+            numbers = map(VER_TEMPLATE.format, sorted(RELEASES.keys()))
+            message = INFO.ABOUT_RELEASES.format(releases='\n'.join(numbers))
+        else:
+            error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
+            message = RELEASES.get(argument, error_message)
+        update.reply(message)
+    else:
+        update.reply(ERROR.TOO_MANY_ARGUMENTS)
     update.send(parse_mode='markdown')
 
 
@@ -231,6 +243,7 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 # ===== ========
 
 ERROR = Namespace(**{
+    'WRONG_ARGUMENT':     "El argumento `{argument}` es incorrecto.",
     'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
     'UNSOUND_AMOUNT':     "El monto es inválido.",
     'TOO_MANY_ARGUMENTS': "No te entiendo, humano.",
@@ -249,11 +262,18 @@ ERROR = Namespace(**{
 
 INFO = Namespace(**{
     'START': "Bilbot, operativo.",
-    'ABOUT': dedent("""
-             Hola, mi nombre es Nebilbot.
-             Pero también me puedes llamar Bilbot.
-             Mi versión es `{version}`.
-             """),
+    'ABOUT':          dedent("""
+                      Hola, mi nombre es Nebilbot.
+                      Pero también me puedes llamar Bilbot.
+                      Mi versión es `{version}`.
+                      """),
+    'ABOUT_RELEASES': dedent("""
+                      Bueno, he tenido bastantes versiones en mi vida...
+                      {releases}
+
+                      Puedes, además, escribir `/about <versión>`,
+                      para recibir el _changelog_ de esta versión.
+                      """),
 
     # from Latin: 'ante' --> before,
     #             'post' --> after.
@@ -274,12 +294,29 @@ INFO = Namespace(**{
 })
 
 
+# CHANGELOG
+# =========
+
+RELEASES = {
+    '0.1.0': "`(empty)`",
+    ########
+    '0.1.1': "`(empty)`",
+    ########
+    '0.1.2': "`(empty)`",
+    ########
+    '0.1.3': "`(empty)`",
+    ########
+    '0.1.4': "`(empty)`",
+}
+
+
 # TEMPLATES
 # =========
 
 CMD_TEMPLATE = "`/{}`"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{user}{delimiter}{amount}\n"
+VER_TEMPLATE = '📦 `{}`'
 HELP_MESSAGE = "Mis comandos son: {commands}."
 
 
