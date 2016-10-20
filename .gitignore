@@ -9,4 +9,5 @@ accounts.txt
 bilbot.log
 
 # et caetera
+__pycache__
 .todo
