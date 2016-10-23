@@ -76,6 +76,10 @@ Update.send = _send
 # ====== =========
 
 def logger(command):
+    """
+    Add a logger to the decorated command.
+    """
+
     @wraps(command)
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
@@ -86,11 +90,39 @@ def logger(command):
 
 
 def _is_not_empty(filepath):
+    """
+    Check whether a file is empty or not.
+
+    >>> _is_not_empty('empty.txt')
+    False
+    """
+
     return os.path.isfile(filepath) and os.path.getsize(filepath)
 
 
 def _select_filename(basename):
+    """
+    Return the absolute path of a particular file,
+    taking into account if a local version exists.
+
+    # If the local file doesn't exist:
+    >>> _select_filename('bilbot.cfg')
+    '/absolute/path/bilbot.cfg'
+
+    # Otherwise, it would return...
+    >>> _select_filename('bilbot.cfg')
+    '/absolute/path/local-bilbot.cfg'
+    """
+
     def get_fullpath(filename):
+        """
+        Provide the absolute path to a particular file,
+        considering the current location of the script.
+
+        >>> get_fullpath('bilbot.cfg')
+        'absolute/path/to/bilbot.cfg'
+        """
+
         current_dirname = os.path.dirname(os.path.realpath(__file__))
         return os.path.join(current_dirname, filename)
 
@@ -101,6 +133,15 @@ def _select_filename(basename):
 
 
 def _get_commands():
+    """
+    Yield all the defined commands.
+
+    >>> _get_commands()
+    {'foo': <function foo_command at [...]>,
+     'bar': <function bar_command at [...]>,
+     'qux': <function qux_command at [...]>}
+    """
+
     keep_name = lambda key: key.split('_')[0]  # from "help_command" to "help".
     return {keep_name(key): function
             for (key, function)
@@ -109,6 +150,17 @@ def _get_commands():
 
 
 def _to_money(amount):
+    """
+    Return a formatted amount of money,
+    using dots as thousands separators.
+
+    >>> _to_money(123)
+    '123'
+
+    >>> _to_money(1234567890)
+    '1.234.567.890'
+    """
+
     # REVIEW: should I use 'locale' configuration?
     return '{:,}'.format(amount).replace(',', '.')
 
@@ -171,6 +223,14 @@ def list_command(update):
     """
 
     def process(line):
+        """
+        Process a string with a "<name>;<amount>" format,
+        replying to the user and returning the amount.
+
+        >>> process('Alice;7.650\n')
+        7650   # (a message is sent)
+        """
+
         name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
@@ -192,6 +252,17 @@ def withdraw_command(update, args):
     """
 
     def add_record(name, amount):
+        """
+        Write a new record into the accounts document,
+        using the following format: "<name>;<amount>".
+
+        >>> add_record('Alice', '650')
+        write('Alice;650\n')
+
+        >>> add_record('Bob', '4.200')
+        write('Bob;4.200\n')
+        """
+
         with open(ACCOUNTS, 'a') as accounts:
             record = REC_TEMPLATE.format(user=name,
                                          delimiter=FIELD_DELIMITER,
@@ -199,6 +270,17 @@ def withdraw_command(update, args):
             accounts.write(record)
 
     def withdraw(amount):
+        """
+        Withdraw a specific amount of money,
+        informing the user about this transaction.
+
+        >>> withdraw(200)
+        # OK
+
+        >>> withdraw('two hundred pesos')
+        # ValueError
+        """
+
         if amount < 1:
             update.reply(ERROR.NONPOSITIVE_AMOUNT)
         else:
