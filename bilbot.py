@@ -81,6 +81,8 @@ def logger(command):
     """
 
     @wraps(command)
+    # pylint: disable=bad-whitespace
+    # pylint: disable=unused-argument
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
         message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
@@ -167,6 +169,9 @@ def _to_money(amount):
 
 # COMMANDS
 # ========
+
+# pylint: disable=no-member
+# =======
 
 @logger
 def start_command(update):
@@ -345,6 +350,7 @@ def unknown(bot, update):
     Handle (almost) all the nonexistent commands.
     """
 
+    # pylint: disable=unused-argument
     unknown_command, *_ = update.message.text.split()
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
