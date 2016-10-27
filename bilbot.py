@@ -10,15 +10,15 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 
 __AUTHOR__ = 'Nebil Kawas García'
 __LICENSE__ = 'MPL-2.0'
-__VERSION__ = '0.1.4'
+__VERSION__ = '0.2.0'
 
 import inspect
 import logging
 import os
 
-from argparse import Namespace
 from functools import wraps
-from textwrap import dedent
+from changelog import RELEASES
+from messages import ERROR, INFO
 
 from telegram.ext import (CommandHandler,
                           MessageHandler,
@@ -76,7 +76,13 @@ Update.send = _send
 # ====== =========
 
 def logger(command):
+    """
+    Add a logger to the decorated command.
+    """
+
     @wraps(command)
+    # pylint: disable=bad-whitespace
+    # pylint: disable=unused-argument
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
         message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
@@ -85,8 +91,40 @@ def logger(command):
     return wrapper
 
 
+def _is_not_empty(filepath):
+    """
+    Check whether a file is empty or not.
+
+    >>> _is_not_empty('empty.txt')
+    False
+    """
+
+    return os.path.isfile(filepath) and os.path.getsize(filepath)
+
+
 def _select_filename(basename):
+    """
+    Return the absolute path of a particular file,
+    taking into account if a local version exists.
+
+    # If the local file doesn't exist:
+    >>> _select_filename('bilbot.cfg')
+    '/absolute/path/bilbot.cfg'
+
+    # Otherwise, it would return...
+    >>> _select_filename('bilbot.cfg')
+    '/absolute/path/local-bilbot.cfg'
+    """
+
     def get_fullpath(filename):
+        """
+        Provide the absolute path to a particular file,
+        considering the current location of the script.
+
+        >>> get_fullpath('bilbot.cfg')
+        'absolute/path/to/bilbot.cfg'
+        """
+
         current_dirname = os.path.dirname(os.path.realpath(__file__))
         return os.path.join(current_dirname, filename)
 
@@ -97,6 +135,15 @@ def _select_filename(basename):
 
 
 def _get_commands():
+    """
+    Yield all the defined commands.
+
+    >>> _get_commands()
+    {'foo': <function foo_command at [...]>,
+     'bar': <function bar_command at [...]>,
+     'qux': <function qux_command at [...]>}
+    """
+
     keep_name = lambda key: key.split('_')[0]  # from "help_command" to "help".
     return {keep_name(key): function
             for (key, function)
@@ -105,6 +152,17 @@ def _get_commands():
 
 
 def _to_money(amount):
+    """
+    Return a formatted amount of money,
+    using dots as thousands separators.
+
+    >>> _to_money(123)
+    '123'
+
+    >>> _to_money(1234567890)
+    '1.234.567.890'
+    """
+
     # REVIEW: should I use 'locale' configuration?
     return '{:,}'.format(amount).replace(',', '.')
 
@@ -112,37 +170,77 @@ def _to_money(amount):
 # COMMANDS
 # ========
 
+# pylint: disable=no-member
+# =======
+
 @logger
 def start_command(update):
+    """
+    Enciende a `nebilbot`.
+    """
+
     update.reply(INFO.START)
     update.send()
 
 
 @logger
-def about_command(update):
-    update.reply(INFO.ABOUT.format(version=__VERSION__))
+def about_command(update, args):
+    """
+    Conoce algo sobre mí.
+    """
+
+    if len(args) == 0:
+        update.reply(INFO.ABOUT.format(version=__VERSION__))
+    elif len(args) == 1:
+        argument = args[0]
+        if argument == 'releases':
+            numbers = map(VER_TEMPLATE.format, sorted(RELEASES.keys()))
+            message = INFO.ABOUT_RELEASES.format(releases='\n'.join(numbers))
+        else:
+            error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
+            message = RELEASES.get(argument, error_message)
+        update.reply(message)
+    else:
+        update.reply(ERROR.TOO_MANY_ARGUMENTS)
     update.send(parse_mode='markdown')
 
 
 @logger
 def help_command(update):
-    command_list = map(CMD_TEMPLATE.format, sorted(_get_commands()))
-    help_message = HELP_MESSAGE.format(commands=', '.join(command_list))
+    """
+    Recibe (un poco de) ayuda.
+    """
+
+    def format_(name, function):
+        docstring = inspect.getdoc(function)
+        return CMD_TEMPLATE.format(command=name, description=docstring)
+
+    commands = (format_(name, cmd) for name, cmd in _get_commands().items())
+    help_message = INFO.HELP.format(commands='\n'.join(sorted(commands)))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
 
 @logger
 def list_command(update):
-    def is_not_empty(filepath):
-        return os.path.isfile(filepath) and os.path.getsize(filepath)
+    """
+    Muestra todos los registros.
+    """
 
     def process(line):
+        """
+        Process a string with a "<name>;<amount>" format,
+        replying to the user and returning the amount.
+
+        >>> process('Alice;7.650\n')
+        7650   # (a message is sent)
+        """
+
         name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
 
-    if is_not_empty(ACCOUNTS):
+    if _is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'r') as accounts:
             update.reply(INFO.ANTE_LIST)
             total = sum(process(line) for line in accounts)
@@ -154,7 +252,22 @@ def list_command(update):
 
 @logger
 def withdraw_command(update, args):
+    """
+    Agrega un nuevo registro.
+    """
+
     def add_record(name, amount):
+        """
+        Write a new record into the accounts document,
+        using the following format: "<name>;<amount>".
+
+        >>> add_record('Alice', '650')
+        write('Alice;650\n')
+
+        >>> add_record('Bob', '4.200')
+        write('Bob;4.200\n')
+        """
+
         with open(ACCOUNTS, 'a') as accounts:
             record = REC_TEMPLATE.format(user=name,
                                          delimiter=FIELD_DELIMITER,
@@ -162,6 +275,17 @@ def withdraw_command(update, args):
             accounts.write(record)
 
     def withdraw(amount):
+        """
+        Withdraw a specific amount of money,
+        informing the user about this transaction.
+
+        >>> withdraw(200)
+        # OK
+
+        >>> withdraw('two hundred pesos')
+        # ValueError
+        """
+
         if amount < 1:
             update.reply(ERROR.NONPOSITIVE_AMOUNT)
         else:
@@ -186,7 +310,47 @@ def withdraw_command(update, args):
     update.send(parse_mode='markdown')
 
 
+@logger
+def rollback_command(update):
+    """
+    Borra el registro más nuevo.
+    """
+
+    if _is_not_empty(ACCOUNTS):
+        lines = open(ACCOUNTS, 'r').readlines()
+        with open(ACCOUNTS, 'w') as accounts:
+            accounts.writelines(lines[:-1])
+        update.reply(INFO.POST_ROLLBACK)
+    else:
+        update.reply(ERROR.NO_STORED_ACCOUNTS)
+    update.send()
+
+
+@logger
+def clear_command(update):
+    """
+    Elimina todos los registros.
+    """
+
+    if _is_not_empty(ACCOUNTS):
+        with open(ACCOUNTS, 'w'):
+            pass
+
+        # NOTE: I could also write...
+        # open(ACCOUNTS, 'w').close()
+
+        update.reply(INFO.POST_CLEAR)
+    else:
+        update.reply(ERROR.NO_STORED_ACCOUNTS)
+    update.send()
+
+
 def unknown(bot, update):
+    """
+    Handle (almost) all the nonexistent commands.
+    """
+
+    # pylint: disable=unused-argument
     unknown_command, *_ = update.message.text.split()
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
@@ -199,57 +363,13 @@ MISSING_TOKEN = ("\nThe bot token is missing."
                  "\nPlease, declare the token in the configuration file.")
 
 
-# ERROR MESSAGES
-# ===== ========
-
-ERROR = Namespace(**{
-    'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
-    'UNSOUND_AMOUNT':     "El monto es inválido.",
-    'TOO_MANY_ARGUMENTS': "No te entiendo, humano.",
-    'NONPOSITIVE_AMOUNT': "El argumento debe ser estrictamente positivo.",
-    'NO_STORED_ACCOUNTS': "No hay registros disponibles.",
-
-    'UNKNOWN_COMMAND': dedent("""
-                       El comando `{command}` no existe.
-                       Escribe `/help` para obtener una lista de comandos.
-                       """),
-})
-
-
-# INFO MESSAGES
-# ==== ========
-
-INFO = Namespace(**{
-    'START': "Bilbot, operativo.",
-    'ABOUT': dedent("""
-             Hola, mi nombre es Nebilbot.
-             Pero también me puedes llamar Bilbot.
-             Mi versión es `{version}`.
-             """),
-
-    # from Latin: 'ante' --> before,
-    #             'post' --> after.
-    'ANTE_WITHDRAW': "¿Estás seguro de que deseas retirar *{amount}* pesos "
-                     "del quiosco, {user}?",
-    'POST_WITHDRAW': "En realidad, da lo mismo: ya hice la operación.",
-
-    'ANTE_LIST': "Espera un poco, haré memoria de los hechos.",
-    'EACH_LIST': "{user} sacó ${amount}.",
-    'POST_LIST': dedent("""
-                 Eso es todo lo que recuerdo.
-                 Por cierto, esto suma un gran total de...
-                 *{amount}* pesos chilenos.
-                 """),
-})
-
-
 # TEMPLATES
 # =========
 
-CMD_TEMPLATE = "`/{}`"
+CMD_TEMPLATE = "`{command}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{user}{delimiter}{amount}\n"
-HELP_MESSAGE = "Mis comandos son: {commands}."
+VER_TEMPLATE = '📦 `{}`'
 
 
 # SETTINGS

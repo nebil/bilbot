@@ -1,0 +1,36 @@
+
+# This is the Pylint configuration file.
+# [version = 1.6.4]
+
+[FORMAT]
+
+max-line-length      =  79
+max-module-lines     = 299
+docstring-min-length =   3
+
+bad-names = foo,bar,baz,qux,quux
+good-names = _
+no-docstring-rgx = wrapper
+expected-line-ending-format = LF
+
+const-rgx           = [A-Z_]{3,15}$|(__[a-z]{5,10}__)
+inlinevar-rgx       = [a-z_]{3,10}$
+argument-rgx        = [a-z_]{3,10}$
+variable-rgx        = [a-z_]{3,15}$
+function-rgx        = [a-z_]{5,20}$
+module-rgx          = [a-z_]{5,15}$
+dummy-variables-rgx = _
+include-naming-hint = no
+
+[DESIGN]
+
+max-args       =  5
+max-bool-expr  =  3
+max-branches   =  5
+max-locals     = 10
+max-statements = 25
+max-returns    =  3
+
+[MISCELLĀNEA]
+
+notes=IDEA,FIXME,REVIEW,TODO

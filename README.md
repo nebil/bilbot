@@ -18,15 +18,17 @@ se **deberá** usar una versión de Python superior a **3.3**.
 
 #### Librerías de Python
 
-La librería utilizada está resumida en la siguiente tabla.
+Las librerías utilizadas están resumidas en la siguiente tabla.
 
 Nombre                | Descripción                                 | Versión
 --------------------- | ------------------------------------------- | ---------
-[python-telegram-bot] | Un _wrapper_ del [API] de _Telegram Bot_.   | **5.1.0**
+[python-telegram-bot] | Un _wrapper_ del [API] de _Telegram Bot_.   | **5.2.0**
+[flake8]              | Un _linter_ para hacer respetar el [PEP8].  | **2.6.2**
+[pylint]              | Un _linter_ que impone _buenas prácticas_.  | **1.6.4**
 
-Esta librería también aparece en `requirements.txt`.
-Luego, se **deberá** usar este archivo para instalarla con [pip].  
-Esto nos permitirá trabajar con la misma versión,
+Estas librerías también aparecen en `requirements.txt`.
+Luego, se **deberá** usar este archivo para instalarlas con [pip].  
+Esto nos permitirá trabajar con las mismas versiones,
 consiguiendo instalaciones **replicables**, sin hacer esfuerzo.  
 Bueno, un poco: debemos escribir...
 
@@ -97,5 +99,8 @@ https://www.mozilla.org/MPL/2.0/).
 [python]:              http://www.pyzo.org/_images/xkcd_python.png
 
 [python-telegram-bot]: https://pypi.python.org/pypi/python-telegram-bot
+[flake8]:              https://pypi.python.org/pypi/flake8
+[pylint]:              https://pypi.python.org/pypi/pylint
+[pep8]:                https://www.python.org/dev/peps/pep-0008
 [virtualenv]:          https://virtualenv.pypa.io/en/stable
 [pip]:                 https://pip.pypa.io/en/stable
