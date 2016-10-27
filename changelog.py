@@ -50,4 +50,14 @@ RELEASES = {
     💡 a revamp on Bilbot's replies to decrease their verbosity;
     🎨 some small-scale improvements to get a more legible code.
     """),
+    ########
+    '0.2.0': dedent("""
+    This new minor release comes up with the following changes,
+    🔪 two cutting-edge commands: `rollback` and `clear`;
+    📄 a new _changelog_ section for unveiling these life-changing updates;
+    💁 a more informative `/help`, providing a description to each command;
+    📚 a plethora of _docstrings_ and an opportune code restructuring;
+    🐍 two observant cold-blooded linters: `pylint` and `flake8`;
+    ⬆️ and, finally, an updated dependency.
+    """),
 }
