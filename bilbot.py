@@ -88,6 +88,8 @@ def logger(command):
     # pylint: disable=unused-argument
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
+        if command.__name__ == 'unknown':
+            command.__name__ = update.message.text.split()[0]
         message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
                                       command=command.__name__)
         logging.info(message)
@@ -373,13 +375,13 @@ def clear_command(update):
     update.send()
 
 
+@logger
 @sentry
-def unknown(bot, update):
+def unknown(update):
     """
     Handle (almost) all the nonexistent commands.
     """
 
-    # pylint: disable=unused-argument
     unknown_command, *_ = update.message.text.split()
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
