@@ -89,7 +89,7 @@ def logger(command):
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
         if command.__name__ == 'unknown':
-            command.__name__ = update.message.text.split()[0]
+            command.__name__ = _get_command_name(update.message.text)
         message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
                                       command=command.__name__)
         logging.info(message)
@@ -171,6 +171,19 @@ def _get_commands():
             for (key, function)
             in globals().items()
             if key.endswith('_command')}
+
+
+def _get_command_name(text):
+    """
+    Extract the command name from a user input.
+
+    >>> _get_command_name('/command arg1 arg2')
+    '/command'
+    """
+
+    # pylint: disable=unused-variable
+    command, *args = text.split()
+    return command
 
 
 def _to_money(amount):
@@ -382,7 +395,7 @@ def unknown(update):
     Handle (almost) all the nonexistent commands.
     """
 
-    unknown_command, *_ = update.message.text.split()
+    unknown_command = _get_command_name(update.message.text)
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
 
