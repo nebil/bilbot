@@ -75,6 +75,9 @@ Update.send = _send
 # USEFUL FUNCTIONS
 # ====== =========
 
+# pylint: disable=no-member
+# =======
+
 def logger(command):
     """
     Add a logger to the decorated command.
@@ -88,6 +91,23 @@ def logger(command):
         message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
                                       command=command.__name__)
         logging.info(message)
+    return wrapper
+
+
+def sentry(command):
+    """
+    Add a sentry to the decorated command.
+    """
+
+    @wraps(command)
+    def wrapper(update, **kwargs):
+        chat_id = str(update.message.chat.id)
+        if WHITELIST is None or chat_id in WHITELIST.split(','):
+            command(update, **kwargs)
+        else:
+            name = update.message.from_user.first_name
+            update.reply(ERROR.NOT_AUTHORIZED.format(user=name))
+            update.send()
     return wrapper
 
 
@@ -170,10 +190,12 @@ def _to_money(amount):
 # COMMANDS
 # ========
 
-# pylint: disable=no-member
-# =======
-
+# NOTE: These decorators **must** be applied in the following order:
+# ===== [1] @logger,
+#       [2] @sentry.
+#       Otherwise, the unauthorized requests will not be registered.
 @logger
+@sentry
 def start_command(update):
     """
     Enciende a `nebilbot`.
@@ -184,6 +206,7 @@ def start_command(update):
 
 
 @logger
+@sentry
 def about_command(update, args):
     """
     Conoce algo sobre mí.
@@ -206,6 +229,7 @@ def about_command(update, args):
 
 
 @logger
+@sentry
 def help_command(update):
     """
     Recibe (un poco de) ayuda.
@@ -222,6 +246,7 @@ def help_command(update):
 
 
 @logger
+@sentry
 def list_command(update):
     """
     Muestra todos los registros.
@@ -251,6 +276,7 @@ def list_command(update):
 
 
 @logger
+@sentry
 def withdraw_command(update, args):
     """
     Agrega un nuevo registro.
@@ -311,6 +337,7 @@ def withdraw_command(update, args):
 
 
 @logger
+@sentry
 def rollback_command(update):
     """
     Borra el registro más nuevo.
@@ -327,6 +354,7 @@ def rollback_command(update):
 
 
 @logger
+@sentry
 def clear_command(update):
     """
     Elimina todos los registros.
@@ -345,6 +373,7 @@ def clear_command(update):
     update.send()
 
 
+@sentry
 def unknown(bot, update):
     """
     Handle (almost) all the nonexistent commands.
@@ -386,9 +415,10 @@ SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 
 with open(SELECTED_CONFIG) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
-    TGBOT_TOKEN = CONFIG_DICT.get('bot_token')
+    BOT_TOKEN = CONFIG_DICT.get('bot_token')
+    WHITELIST = CONFIG_DICT.get('whitelist')
 
-    if not TGBOT_TOKEN:
+    if not BOT_TOKEN:
         raise Exception(MISSING_TOKEN)
 
 
@@ -403,7 +433,7 @@ if __name__ == '__main__':
                         datefmt='%d/%b %H:%M:%S',
                         style='{')  # for enabling str.format()-style.
 
-    updater = Updater(token=TGBOT_TOKEN)
+    updater = Updater(token=BOT_TOKEN)
     updater.dispatcher.add_handlers()
     updater.start_polling()
     updater.idle()
