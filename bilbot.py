@@ -276,7 +276,7 @@ def list_command(update):
         7650   # (a message is sent)
         """
 
-        name, amount = line.rstrip().split(FIELD_DELIMITER)
+        *_, name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
 
@@ -297,7 +297,7 @@ def withdraw_command(update, args):
     Agrega un nuevo registro.
     """
 
-    def add_record(name, amount):
+    def add_record(uuid, name, amount):
         """
         Write a new record into the accounts document,
         using the following format: "<name>;<amount>".
@@ -310,9 +310,10 @@ def withdraw_command(update, args):
         """
 
         with open(ACCOUNTS, 'a') as accounts:
-            record = REC_TEMPLATE.format(user=name,
-                                         delimiter=FIELD_DELIMITER,
-                                         amount=amount)
+            record = REC_TEMPLATE.format(uuid=uuid,
+                                         user=name,
+                                         amount=amount,
+                                         delimiter=FIELD_DELIMITER)
             accounts.write(record)
 
     def withdraw(amount):
@@ -331,10 +332,11 @@ def withdraw_command(update, args):
             update.reply(ERROR.NONPOSITIVE_AMOUNT)
         else:
             amount = _to_money(amount)
+            uuid = update.message.from_user.id
             first_name = update.message.from_user.first_name
             message = INFO.ANTE_WITHDRAW.format(amount=amount, user=first_name)
             update.reply(message)
-            add_record(first_name, amount)
+            add_record(uuid, first_name, amount)
             update.reply(INFO.POST_WITHDRAW)
 
     if len(args) == 0:
@@ -412,7 +414,7 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 
 CMD_TEMPLATE = "`{command}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
-REC_TEMPLATE = "{user}{delimiter}{amount}\n"
+REC_TEMPLATE = "{uuid}{delimiter}{user}{delimiter}{amount}\n"
 VER_TEMPLATE = '📦 `{}`'
 
 
