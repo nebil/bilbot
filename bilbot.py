@@ -269,11 +269,11 @@ def list_command(update):
 
     def process(line):
         """
-        Process a string with a "<name>;<amount>" format,
+        Process a string with a "<uuid>;<name>;<amount>" format,
         replying to the user and returning the amount.
 
-        >>> process('Alice;7.650\n')
-        7650   # (a message is sent)
+        >>> process('314225;Alice;7.650\n')
+        7650          # (a message is sent)
         """
 
         *_, name, amount = line.rstrip().split(FIELD_DELIMITER)
@@ -300,13 +300,13 @@ def withdraw_command(update, args):
     def add_record(uuid, name, amount):
         """
         Write a new record into the accounts document,
-        using the following format: "<name>;<amount>".
+        using the following format: "<uuid>;<name>;<amount>".
 
-        >>> add_record('Alice', '650')
-        write('Alice;650\n')
+        >>> add_record(314225, 'Alice', '650')
+        write('314225;Alice;650\n')
 
-        >>> add_record('Bob', '4.200')
-        write('Bob;4.200\n')
+        >>> add_record(631104, 'Bob', '4.200')
+        write('631104;Bob;4.200\n')
         """
 
         with open(ACCOUNTS, 'a') as accounts:
