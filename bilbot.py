@@ -39,7 +39,7 @@ def _add_handlers(self):
         self.add_handler(command_handler)
 
     # and then, handle the _faulty_ cases.
-    unknown_handler = MessageHandler([Filters.command], unknown)
+    unknown_handler = MessageHandler(Filters.command, unknown)
     self.add_handler(unknown_handler)
 Dispatcher.add_handlers = _add_handlers
 
