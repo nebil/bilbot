@@ -14,6 +14,10 @@ from textwrap import dedent
 # ===== ========
 
 ERROR = Namespace(**{
+    'NOT_AUTHORIZED':     dedent("""
+                          Lo lamento, {user}.
+                          No estoy autorizado a escuchar tus instrucciones.
+                          """),
     'WRONG_ARGUMENT':     "El argumento `{argument}` es incorrecto.",
     'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
     'UNSOUND_AMOUNT':     "El monto es inválido.",

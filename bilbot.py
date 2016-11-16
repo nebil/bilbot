@@ -10,7 +10,7 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 
 __AUTHOR__ = 'Nebil Kawas García'
 __LICENSE__ = 'MPL-2.0'
-__VERSION__ = '0.2.0'
+__VERSION__ = '0.2.1'
 
 import inspect
 import logging
@@ -39,7 +39,7 @@ def _add_handlers(self):
         self.add_handler(command_handler)
 
     # and then, handle the _faulty_ cases.
-    unknown_handler = MessageHandler([Filters.command], unknown)
+    unknown_handler = MessageHandler(Filters.command, unknown)
     self.add_handler(unknown_handler)
 Dispatcher.add_handlers = _add_handlers
 
@@ -75,6 +75,9 @@ Update.send = _send
 # USEFUL FUNCTIONS
 # ====== =========
 
+# pylint: disable=no-member
+# =======
+
 def logger(command):
     """
     Add a logger to the decorated command.
@@ -85,9 +88,28 @@ def logger(command):
     # pylint: disable=unused-argument
     def wrapper(bot, update, **kwargs):
         command(     update, **kwargs)
+        if command.__name__ == 'unknown':
+            command.__name__ = _get_command_name(update.message.text)
         message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
                                       command=command.__name__)
         logging.info(message)
+    return wrapper
+
+
+def sentry(command):
+    """
+    Add a sentry to the decorated command.
+    """
+
+    @wraps(command)
+    def wrapper(update, **kwargs):
+        chat_id = str(update.message.chat.id)
+        if WHITELIST is None or chat_id in WHITELIST.split(','):
+            command(update, **kwargs)
+        else:
+            name = update.message.from_user.first_name
+            update.reply(ERROR.NOT_AUTHORIZED.format(user=name))
+            update.send()
     return wrapper
 
 
@@ -151,6 +173,19 @@ def _get_commands():
             if key.endswith('_command')}
 
 
+def _get_command_name(text):
+    """
+    Extract the command name from a user input.
+
+    >>> _get_command_name('/command arg1 arg2')
+    '/command'
+    """
+
+    # pylint: disable=unused-variable
+    command, *args = text.split()
+    return command
+
+
 def _to_money(amount):
     """
     Return a formatted amount of money,
@@ -170,10 +205,12 @@ def _to_money(amount):
 # COMMANDS
 # ========
 
-# pylint: disable=no-member
-# =======
-
+# NOTE: These decorators **must** be applied in the following order:
+# ===== [1] @logger,
+#       [2] @sentry.
+#       Otherwise, the unauthorized requests will not be registered.
 @logger
+@sentry
 def start_command(update):
     """
     Enciende a `nebilbot`.
@@ -184,6 +221,7 @@ def start_command(update):
 
 
 @logger
+@sentry
 def about_command(update, args):
     """
     Conoce algo sobre mí.
@@ -206,6 +244,7 @@ def about_command(update, args):
 
 
 @logger
+@sentry
 def help_command(update):
     """
     Recibe (un poco de) ayuda.
@@ -222,6 +261,7 @@ def help_command(update):
 
 
 @logger
+@sentry
 def list_command(update):
     """
     Muestra todos los registros.
@@ -229,14 +269,14 @@ def list_command(update):
 
     def process(line):
         """
-        Process a string with a "<name>;<amount>" format,
+        Process a string with a "<uuid>;<name>;<amount>" format,
         replying to the user and returning the amount.
 
-        >>> process('Alice;7.650\n')
-        7650   # (a message is sent)
+        >>> process('314225;Alice;7.650\n')
+        7650          # (a message is sent)
         """
 
-        name, amount = line.rstrip().split(FIELD_DELIMITER)
+        *_, name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
 
@@ -251,27 +291,29 @@ def list_command(update):
 
 
 @logger
+@sentry
 def withdraw_command(update, args):
     """
     Agrega un nuevo registro.
     """
 
-    def add_record(name, amount):
+    def add_record(uuid, name, amount):
         """
         Write a new record into the accounts document,
-        using the following format: "<name>;<amount>".
+        using the following format: "<uuid>;<name>;<amount>".
 
-        >>> add_record('Alice', '650')
-        write('Alice;650\n')
+        >>> add_record(314225, 'Alice', '650')
+        write('314225;Alice;650\n')
 
-        >>> add_record('Bob', '4.200')
-        write('Bob;4.200\n')
+        >>> add_record(631104, 'Bob', '4.200')
+        write('631104;Bob;4.200\n')
         """
 
         with open(ACCOUNTS, 'a') as accounts:
-            record = REC_TEMPLATE.format(user=name,
-                                         delimiter=FIELD_DELIMITER,
-                                         amount=amount)
+            record = REC_TEMPLATE.format(uuid=uuid,
+                                         user=name,
+                                         amount=amount,
+                                         delimiter=FIELD_DELIMITER)
             accounts.write(record)
 
     def withdraw(amount):
@@ -290,10 +332,11 @@ def withdraw_command(update, args):
             update.reply(ERROR.NONPOSITIVE_AMOUNT)
         else:
             amount = _to_money(amount)
+            uuid = update.message.from_user.id
             first_name = update.message.from_user.first_name
             message = INFO.ANTE_WITHDRAW.format(amount=amount, user=first_name)
             update.reply(message)
-            add_record(first_name, amount)
+            add_record(uuid, first_name, amount)
             update.reply(INFO.POST_WITHDRAW)
 
     if len(args) == 0:
@@ -311,6 +354,7 @@ def withdraw_command(update, args):
 
 
 @logger
+@sentry
 def rollback_command(update):
     """
     Borra el registro más nuevo.
@@ -327,6 +371,7 @@ def rollback_command(update):
 
 
 @logger
+@sentry
 def clear_command(update):
     """
     Elimina todos los registros.
@@ -345,13 +390,14 @@ def clear_command(update):
     update.send()
 
 
-def unknown(bot, update):
+@logger
+@sentry
+def unknown(update):
     """
     Handle (almost) all the nonexistent commands.
     """
 
-    # pylint: disable=unused-argument
-    unknown_command, *_ = update.message.text.split()
+    unknown_command = _get_command_name(update.message.text)
     update.reply(ERROR.UNKNOWN_COMMAND.format(command=unknown_command))
     update.send(parse_mode='markdown')
 
@@ -368,7 +414,7 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 
 CMD_TEMPLATE = "`{command}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
-REC_TEMPLATE = "{user}{delimiter}{amount}\n"
+REC_TEMPLATE = "{uuid}{delimiter}{user}{delimiter}{amount}\n"
 VER_TEMPLATE = '📦 `{}`'
 
 
@@ -386,9 +432,10 @@ SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 
 with open(SELECTED_CONFIG) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
-    TGBOT_TOKEN = CONFIG_DICT.get('bot_token')
+    BOT_TOKEN = CONFIG_DICT.get('bot_token')
+    WHITELIST = CONFIG_DICT.get('whitelist')
 
-    if not TGBOT_TOKEN:
+    if not BOT_TOKEN:
         raise Exception(MISSING_TOKEN)
 
 
@@ -403,7 +450,7 @@ if __name__ == '__main__':
                         datefmt='%d/%b %H:%M:%S',
                         style='{')  # for enabling str.format()-style.
 
-    updater = Updater(token=TGBOT_TOKEN)
+    updater = Updater(token=BOT_TOKEN)
     updater.dispatcher.add_handlers()
     updater.start_polling()
     updater.idle()

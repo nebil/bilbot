@@ -60,4 +60,10 @@ RELEASES = {
     🐍 two observant cold-blooded linters: `pylint` and `flake8`;
     ⬆️ and, finally, an updated dependency.
     """),
+    ########
+    '0.2.1': dedent("""
+    This new patch release comes up with the following changes,
+    🔒 a whitelist to prevent calling Bilbot from unauthorized chats;
+    💥 a slight change to the saving format to avoid name collisions.
+    """),
 }
