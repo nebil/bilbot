@@ -23,6 +23,7 @@ ERROR = Namespace(**{
     'UNSOUND_AMOUNT':     "El monto es inválido.",
     'TOO_MANY_ARGUMENTS': "No te entiendo, humano.",
     'NONPOSITIVE_AMOUNT': "El argumento debe ser estrictamente positivo.",
+    'UNREALISTIC_AMOUNT': "El argumento no es suficientemente razonable.",
     'NO_STORED_ACCOUNTS': "No hay registros disponibles.",
 
     'UNKNOWN_COMMAND': dedent("""

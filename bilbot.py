@@ -328,9 +328,7 @@ def withdraw_command(update, args):
         # ValueError
         """
 
-        if amount < 1:
-            update.reply(ERROR.NONPOSITIVE_AMOUNT)
-        else:
+        if MIN_AMOUNT <= amount <= MAX_AMOUNT:
             amount = _to_money(amount)
             uuid = update.message.from_user.id
             first_name = update.message.from_user.first_name
@@ -338,6 +336,10 @@ def withdraw_command(update, args):
             update.reply(message)
             add_record(uuid, first_name, amount)
             update.reply(INFO.POST_WITHDRAW)
+        elif amount < 1:
+            update.reply(ERROR.NONPOSITIVE_AMOUNT)
+        else:
+            update.reply(ERROR.UNREALISTIC_AMOUNT)
 
     if len(args) == 0:
         update.reply(ERROR.MISSING_AMOUNT)
@@ -425,6 +427,9 @@ LOG_DIR = os.getenv('OPENSHIFT_LOG_DIR', '.')
 LOGFILE = os.path.join(LOG_DIR, 'bilbot.log')
 DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
 ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
+
+MIN_AMOUNT = 500
+MAX_AMOUNT = 100000
 
 FIELD_DELIMITER = ';'
 CONFIG_FILENAME = 'bilbot.cfg'
