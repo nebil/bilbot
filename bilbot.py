@@ -17,7 +17,7 @@ import logging
 import os
 
 from functools import wraps
-from changelog import RELEASES
+import changelog
 from messages import ERROR, INFO
 
 from telegram.ext import (CommandHandler,
@@ -186,6 +186,27 @@ def _get_command_name(text):
     return command
 
 
+def _get_release_type(version):
+    """
+    Indicate whether is a major, minor or patch release.
+
+    >>> get_release_type('3.1.4')
+    'patch'
+
+    >>> get_release_type('4.2.0')
+    'minor'
+
+    >>> get_release_type('5.0.0')
+    'major'
+    """
+
+    # NOTE: I think this is an elegant implementation.
+    major, minor, patch = map(int, version.split('.'))
+    if patch: return 'patch'
+    if minor: return 'minor'
+    if major: return 'major'
+
+
 def _to_money(amount):
     """
     Return a formatted amount of money,
@@ -228,27 +249,7 @@ def about_command(update, args):
     """
 
     def format_(version):
-        def get_release_type(version):
-            """
-            Indicate whether is a major, minor or patch release.
-
-            >>> get_release_type('3.1.4')
-            'patch'
-
-            >>> get_release_type('4.2.0')
-            'minor'
-
-            >>> get_release_type('5.0.0')
-            'major'
-            """
-
-            # NOTE: I think this is an elegant implementation.
-            major, minor, patch = map(int, version.split('.'))
-            if patch: return 'patch'
-            if minor: return 'minor'
-            if major: return 'major'
-
-        release_type = get_release_type(version)
+        release_type = _get_release_type(version)
         return VER_TEMPLATE[release_type].format(version)
 
     if len(args) == 0:
@@ -256,11 +257,11 @@ def about_command(update, args):
     elif len(args) == 1:
         argument = args[0]
         if argument == 'releases':
-            numbers = map(format_, sorted(RELEASES.keys()))
+            numbers = map(format_, sorted(changelog.RELEASES.keys()))
             message = INFO.ABOUT_RELEASES.format(releases='\n'.join(numbers))
         else:
             error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
-            message = RELEASES.get(argument, error_message)
+            message = changelog.RELEASES.get(argument, error_message)
         update.reply(message)
     else:
         update.reply(ERROR.TOO_MANY_ARGUMENTS)
