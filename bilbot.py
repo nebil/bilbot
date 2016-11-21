@@ -250,12 +250,16 @@ def help_command(update):
     Recibe (un poco de) ayuda.
     """
 
-    def format_(name, function):
+    def format_(name, function, length):
         docstring = inspect.getdoc(function)
-        return CMD_TEMPLATE.format(command=name, description=docstring)
+        return CMD_TEMPLATE.format(command=name,
+                                   description=docstring,
+                                   fill=length)
 
-    commands = (format_(name, cmd) for name, cmd in _get_commands().items())
-    help_message = INFO.HELP.format(commands='\n'.join(sorted(commands)))
+    cmd_dict = sorted(_get_commands().items())
+    max_length = max(map(len, _get_commands()))  # find the longest command.
+    commands = (format_(*cmd, length=max_length) for cmd in cmd_dict)
+    help_message = INFO.HELP.format(commands='\n'.join(commands))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
@@ -414,7 +418,7 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 # TEMPLATES
 # =========
 
-CMD_TEMPLATE = "`{command}` — {description}"
+CMD_TEMPLATE = "`{command:>{fill}}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{uuid}{delimiter}{user}{delimiter}{amount}\n"
 VER_TEMPLATE = '📦 `{}`'
