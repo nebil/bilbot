@@ -33,7 +33,7 @@ from telegram.update import Update
 
 def _add_handlers(self):
     # first, add all the defined commands.
-    for name, callback in _get_commands().items():
+    for name, callback in COMMANDS.items():
         has_args = 'args' in inspect.signature(callback).parameters
         command_handler = CommandHandler(name, callback, pass_args=has_args)
         self.add_handler(command_handler)
@@ -281,8 +281,8 @@ def help_command(update):
                                    description=docstring,
                                    fill=length)
 
-    cmd_dict = sorted(_get_commands().items())
-    max_length = max(map(len, _get_commands()))  # find the longest command.
+    cmd_dict = sorted(COMMANDS.items())
+    max_length = max(map(len, COMMANDS))  # find the longest command.
     commands = (format_(*cmd, length=max_length) for cmd in cmd_dict)
     help_message = INFO.HELP.format(commands='\n'.join(commands))
     update.reply(help_message)
@@ -488,6 +488,7 @@ if __name__ == '__main__':
                         datefmt='%d/%b %H:%M:%S',
                         style='{')  # for enabling str.format()-style.
 
+    COMMANDS = _get_commands()
     updater = Updater(token=BOT_TOKEN)
     updater.dispatcher.add_handlers()
     updater.start_polling()
