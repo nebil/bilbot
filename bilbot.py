@@ -227,12 +227,36 @@ def about_command(update, args):
     Conoce algo sobre mí.
     """
 
+    def format_(version):
+        def get_release_type(version):
+            """
+            Indicate whether is a major, minor or patch release.
+
+            >>> get_release_type('3.1.4')
+            'patch'
+
+            >>> get_release_type('4.2.0')
+            'minor'
+
+            >>> get_release_type('5.0.0')
+            'major'
+            """
+
+            # NOTE: I think this is an elegant implementation.
+            major, minor, patch = map(int, version.split('.'))
+            if patch: return 'patch'
+            if minor: return 'minor'
+            if major: return 'major'
+
+        release_type = get_release_type(version)
+        return VER_TEMPLATE[release_type].format(version)
+
     if len(args) == 0:
         update.reply(INFO.ABOUT.format(version=__VERSION__))
     elif len(args) == 1:
         argument = args[0]
         if argument == 'releases':
-            numbers = map(VER_TEMPLATE.format, sorted(RELEASES.keys()))
+            numbers = map(format_, sorted(RELEASES.keys()))
             message = INFO.ABOUT_RELEASES.format(releases='\n'.join(numbers))
         else:
             error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
@@ -421,7 +445,11 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 CMD_TEMPLATE = "`{command:>{fill}}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{uuid}{delimiter}{user}{delimiter}{amount}\n"
-VER_TEMPLATE = '📦 `{}`'
+VER_TEMPLATE = {
+    'major': '✨ `{}`',
+    'minor': '🎁 `{}`',
+    'patch': '📦 `{}`'
+}
 
 
 # SETTINGS
