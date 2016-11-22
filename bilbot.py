@@ -67,7 +67,7 @@ Update.reply = _reply
 
 
 def _send(self, **kwargs):
-    sent_message = '\n'.join(self.buffer)
+    sent_message = _itemize(self.buffer)
     self.message.reply_text(sent_message, **kwargs)
 Update.send = _send
 
@@ -207,6 +207,19 @@ def _get_release_type(version):
     if major: return 'major'
 
 
+def _itemize(iterable):
+    """
+    Return an itemized string from an iterable.
+
+    >>> _itemize(['seis', 'siete', 'ocho'])
+    'seis
+    siete
+    ocho'
+    """
+
+    return '\n'.join(iterable)
+
+
 def _to_money(amount):
     """
     Return a formatted amount of money,
@@ -258,7 +271,7 @@ def about_command(update, args):
         argument = args[0]
         if argument == 'releases':
             numbers = map(format_, sorted(changelog.RELEASES.keys()))
-            message = INFO.ABOUT_RELEASES.format(releases='\n'.join(numbers))
+            message = INFO.ABOUT_RELEASES.format(releases=_itemize(numbers))
         else:
             error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
             message = changelog.RELEASES.get(argument, error_message)
@@ -284,7 +297,7 @@ def help_command(update):
     cmd_dict = sorted(COMMANDS.items())
     max_length = max(map(len, COMMANDS))  # find the longest command.
     commands = (format_(*cmd, length=max_length) for cmd in cmd_dict)
-    help_message = INFO.HELP.format(commands='\n'.join(commands))
+    help_message = INFO.HELP.format(commands=_itemize(commands))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
