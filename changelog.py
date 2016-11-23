@@ -69,6 +69,13 @@ RELEASES = {
     🔒 a whitelist to prevent calling Bilbot from unauthorized chats;
     💥 a slight change to the saving format to avoid name collisions.
     """),
+    ########
+    '0.2.2': dedent("""
+    {introduction}
+    👮 a new condition before withdrawing to forbid far-fetched amounts;
+    💅 some aesthetic refinements to the output of a couple of commands;
+    🎨 a few refactoring efforts to get a more readable code.
+    """),
 }
 
 
