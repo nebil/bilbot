@@ -10,7 +10,7 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 
 __AUTHOR__ = 'Nebil Kawas García'
 __LICENSE__ = 'MPL-2.0'
-__VERSION__ = '0.2.1'
+__VERSION__ = '0.2.2'
 
 import inspect
 import logging
