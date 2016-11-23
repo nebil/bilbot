@@ -4,6 +4,9 @@
 
 [FORMAT]
 
+# C0321: for multiple statements on a single line
+disable=C0321
+
 max-line-length      =  79
 max-module-lines     = 299
 docstring-min-length =   3

@@ -10,14 +10,14 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 
 __AUTHOR__ = 'Nebil Kawas García'
 __LICENSE__ = 'MPL-2.0'
-__VERSION__ = '0.2.1'
+__VERSION__ = '0.2.2'
 
 import inspect
 import logging
 import os
 
 from functools import wraps
-from changelog import RELEASES
+import changelog
 from messages import ERROR, INFO
 
 from telegram.ext import (CommandHandler,
@@ -33,7 +33,7 @@ from telegram.update import Update
 
 def _add_handlers(self):
     # first, add all the defined commands.
-    for name, callback in _get_commands().items():
+    for name, callback in COMMANDS.items():
         has_args = 'args' in inspect.signature(callback).parameters
         command_handler = CommandHandler(name, callback, pass_args=has_args)
         self.add_handler(command_handler)
@@ -67,7 +67,7 @@ Update.reply = _reply
 
 
 def _send(self, **kwargs):
-    sent_message = '\n'.join(self.buffer)
+    sent_message = _itemize(self.buffer)
     self.message.reply_text(sent_message, **kwargs)
 Update.send = _send
 
@@ -186,6 +186,40 @@ def _get_command_name(text):
     return command
 
 
+def _get_release_type(version):
+    """
+    Indicate whether is a major, minor or patch release.
+
+    >>> get_release_type('3.1.4')
+    'patch'
+
+    >>> get_release_type('4.2.0')
+    'minor'
+
+    >>> get_release_type('5.0.0')
+    'major'
+    """
+
+    # NOTE: I think this is an elegant implementation.
+    major, minor, patch = map(int, version.split('.'))
+    if patch: return 'patch'
+    if minor: return 'minor'
+    if major: return 'major'
+
+
+def _itemize(iterable):
+    """
+    Return an itemized string from an iterable.
+
+    >>> _itemize(['seis', 'siete', 'ocho'])
+    'seis
+    siete
+    ocho'
+    """
+
+    return '\n'.join(iterable)
+
+
 def _to_money(amount):
     """
     Return a formatted amount of money,
@@ -227,16 +261,20 @@ def about_command(update, args):
     Conoce algo sobre mí.
     """
 
+    def format_(version):
+        release_type = _get_release_type(version)
+        return VER_TEMPLATE[release_type].format(version)
+
     if len(args) == 0:
         update.reply(INFO.ABOUT.format(version=__VERSION__))
     elif len(args) == 1:
         argument = args[0]
         if argument == 'releases':
-            numbers = map(VER_TEMPLATE.format, sorted(RELEASES.keys()))
-            message = INFO.ABOUT_RELEASES.format(releases='\n'.join(numbers))
+            numbers = map(format_, sorted(changelog.RELEASES.keys()))
+            message = INFO.ABOUT_RELEASES.format(releases=_itemize(numbers))
         else:
             error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
-            message = RELEASES.get(argument, error_message)
+            message = changelog.RELEASES.get(argument, error_message)
         update.reply(message)
     else:
         update.reply(ERROR.TOO_MANY_ARGUMENTS)
@@ -250,12 +288,16 @@ def help_command(update):
     Recibe (un poco de) ayuda.
     """
 
-    def format_(name, function):
+    def format_(name, function, length):
         docstring = inspect.getdoc(function)
-        return CMD_TEMPLATE.format(command=name, description=docstring)
+        return CMD_TEMPLATE.format(command=name,
+                                   description=docstring,
+                                   fill=length)
 
-    commands = (format_(name, cmd) for name, cmd in _get_commands().items())
-    help_message = INFO.HELP.format(commands='\n'.join(sorted(commands)))
+    cmd_dict = sorted(COMMANDS.items())
+    max_length = max(map(len, COMMANDS))  # find the longest command.
+    commands = (format_(*cmd, length=max_length) for cmd in cmd_dict)
+    help_message = INFO.HELP.format(commands=_itemize(commands))
     update.reply(help_message)
     update.send(parse_mode='markdown')
 
@@ -328,9 +370,7 @@ def withdraw_command(update, args):
         # ValueError
         """
 
-        if amount < 1:
-            update.reply(ERROR.NONPOSITIVE_AMOUNT)
-        else:
+        if MIN_AMOUNT <= amount <= MAX_AMOUNT:
             amount = _to_money(amount)
             uuid = update.message.from_user.id
             first_name = update.message.from_user.first_name
@@ -338,6 +378,10 @@ def withdraw_command(update, args):
             update.reply(message)
             add_record(uuid, first_name, amount)
             update.reply(INFO.POST_WITHDRAW)
+        elif amount < 1:
+            update.reply(ERROR.NONPOSITIVE_AMOUNT)
+        else:
+            update.reply(ERROR.UNREALISTIC_AMOUNT)
 
     if len(args) == 0:
         update.reply(ERROR.MISSING_AMOUNT)
@@ -412,10 +456,14 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 # TEMPLATES
 # =========
 
-CMD_TEMPLATE = "`{command}` — {description}"
+CMD_TEMPLATE = "`{command:>{fill}}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
 REC_TEMPLATE = "{uuid}{delimiter}{user}{delimiter}{amount}\n"
-VER_TEMPLATE = '📦 `{}`'
+VER_TEMPLATE = {
+    'major': '✨ `{}`',
+    'minor': '🎁 `{}`',
+    'patch': '📦 `{}`'
+}
 
 
 # SETTINGS
@@ -425,6 +473,9 @@ LOG_DIR = os.getenv('OPENSHIFT_LOG_DIR', '.')
 LOGFILE = os.path.join(LOG_DIR, 'bilbot.log')
 DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
 ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
+
+MIN_AMOUNT = 500
+MAX_AMOUNT = 100000
 
 FIELD_DELIMITER = ';'
 CONFIG_FILENAME = 'bilbot.cfg'
@@ -450,6 +501,7 @@ if __name__ == '__main__':
                         datefmt='%d/%b %H:%M:%S',
                         style='{')  # for enabling str.format()-style.
 
+    COMMANDS = _get_commands()
     updater = Updater(token=BOT_TOKEN)
     updater.dispatcher.add_handlers()
     updater.start_polling()
