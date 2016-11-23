@@ -16,6 +16,23 @@ Porque todo eso... es **bilbot**.
 :warning: Para evitar posibles fallas de compatibilidad,
 se **deberá** usar una versión de Python superior a **3.3**.
 
+#### Archivos
+
+Los archivos del repositorio están resumidos en la siguiente tabla.
+
+Nombre             | Descripción
+------------------ | ------------------------------------------
+`.gitignore`       | Archivos ignorados por Git.
+`.pylintrc`        | _Config-file_ de `pylint`.
+`bilbot.cfg`       | _Config-file_ de `bilbot`.
+`bilbot.py`        | Módulo esencial de Bilbot.
+`changelog.py`     | Módulo con el _changelog_.
+`messages.py`      | Módulo con los mensajes para los usuarios.
+`LICENSE`          | Documento con el Mozilla Public License.
+`README.md`        | `self`
+`requirements.txt` | Archivo de dependencias para `pip`.
+`tox.ini`          | _Config-file_ de `flake8`.
+
 #### Librerías de Python
 
 Las librerías utilizadas están resumidas en la siguiente tabla.
