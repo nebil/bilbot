@@ -17,6 +17,7 @@ import logging
 import os
 
 from functools import wraps
+from subprocess import check_output
 import changelog
 from messages import ERROR, INFO
 
@@ -154,6 +155,11 @@ def _select_filename(basename):
     basepath, local_filepath = map(get_fullpath, [basename, local_filename])
 
     return local_filepath if os.path.isfile(local_filepath) else basepath
+
+
+def _get_last_ppid():
+    last_line = check_output(['tail', '-1', ACCOUNTS]).decode('utf-8')
+    return last_line.split(FIELD_DELIMITER)[0]
 
 
 def _get_commands():
@@ -304,10 +310,31 @@ def help_command(update):
 
 @logger
 @sentry
+def new_command(update):
+    """
+    Inicia un nuevo periodo.
+    """
+
+    last_ppid = int(_get_last_ppid())
+    with open(ACCOUNTS, 'a') as accounts:
+        boundary = NEW_TEMPLATE.format(ppid=last_ppid + 1,
+                                       delimiter=FIELD_DELIMITER)
+        accounts.write(boundary)
+    first_name = update.message.from_user.first_name
+    update.reply(INFO.POST_NEW.format(user=first_name))
+    update.send()
+
+
+@logger
+@sentry
 def list_command(update):
     """
     Muestra todos los registros.
     """
+
+    def is_from_ppid(line, ppid):
+        line_ppid, *rest = line.rstrip().split(FIELD_DELIMITER)
+        return line_ppid == ppid if any(rest) else None
 
     def process(line):
         """
@@ -325,7 +352,9 @@ def list_command(update):
     if _is_not_empty(ACCOUNTS):
         with open(ACCOUNTS, 'r') as accounts:
             update.reply(INFO.ANTE_LIST)
-            total = sum(process(line) for line in accounts)
+            last_ppid = _get_last_ppid()
+            total = sum(process(line) for line in accounts
+                        if is_from_ppid(line, last_ppid))
             update.reply(INFO.POST_LIST.format(amount=_to_money(total)))
     else:
         update.reply(ERROR.NO_STORED_ACCOUNTS)
@@ -339,7 +368,7 @@ def withdraw_command(update, args):
     Agrega un nuevo registro.
     """
 
-    def add_record(uuid, name, amount):
+    def add_record(ppid, uuid, name, amount):
         """
         Write a new record into the accounts document,
         using the following format: "<uuid>;<name>;<amount>".
@@ -352,7 +381,8 @@ def withdraw_command(update, args):
         """
 
         with open(ACCOUNTS, 'a') as accounts:
-            record = REC_TEMPLATE.format(uuid=uuid,
+            record = REC_TEMPLATE.format(ppid=ppid,
+                                         uuid=uuid,
                                          user=name,
                                          amount=amount,
                                          delimiter=FIELD_DELIMITER)
@@ -372,11 +402,12 @@ def withdraw_command(update, args):
 
         if MIN_AMOUNT <= amount <= MAX_AMOUNT:
             amount = _to_money(amount)
+            ppid = _get_last_ppid()
             uuid = update.message.from_user.id
             first_name = update.message.from_user.first_name
             message = INFO.ANTE_WITHDRAW.format(amount=amount, user=first_name)
             update.reply(message)
-            add_record(uuid, first_name, amount)
+            add_record(ppid, uuid, first_name, amount)
             update.reply(INFO.POST_WITHDRAW)
         elif amount < 1:
             update.reply(ERROR.NONPOSITIVE_AMOUNT)
@@ -458,7 +489,8 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 
 CMD_TEMPLATE = "`{command:>{fill}}` — {description}"
 LOG_TEMPLATE = "{user} called {command}."
-REC_TEMPLATE = "{uuid}{delimiter}{user}{delimiter}{amount}\n"
+NEW_TEMPLATE = "{ppid}{delimiter}\n"
+REC_TEMPLATE = "{ppid}{delimiter}{uuid}{delimiter}{user}{delimiter}{amount}\n"
 VER_TEMPLATE = {
     'major': '✨ `{}`',
     'minor': '🎁 `{}`',

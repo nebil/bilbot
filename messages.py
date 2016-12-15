@@ -57,6 +57,8 @@ INFO = Namespace(**{
 
     # from Latin: 'ante' --> before,
     #             'post' --> after.
+    'POST_NEW': "Muy bien, {user}. He abierto un nuevo periodo de compras.",
+
     'POST_CLEAR': "Todo listo: he eliminado cualquier rastro de registros.",
 
     'ANTE_WITHDRAW': "¿Estás seguro de que deseas retirar *{amount}* pesos "
