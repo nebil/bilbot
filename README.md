@@ -39,7 +39,7 @@ Las librerías utilizadas están resumidas en la siguiente tabla.
 
 Nombre                | Descripción                                 | Versión
 --------------------- | ------------------------------------------- | ---------
-[python-telegram-bot] | Un _wrapper_ del [API] de _Telegram Bot_.   | **5.2.0**
+[python-telegram-bot] | Un _wrapper_ del [API] de _Telegram Bot_.   | **5.3.0**
 [flake8]              | Un _linter_ para hacer respetar el [PEP8].  | **2.6.2**
 [pylint]              | Un _linter_ que impone _buenas prácticas_.  | **1.6.4**
 

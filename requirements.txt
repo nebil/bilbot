@@ -1,5 +1,5 @@
 # runtime dependencies
-python-telegram-bot==5.2.0
+python-telegram-bot==5.3.0
 
 # development dependencies
 flake8==2.6.2
