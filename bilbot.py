@@ -72,6 +72,8 @@ def _send(self, **kwargs):
     self.message.reply_text(sent_message, **kwargs)
 Update.send = _send
 
+Update.user = property(lambda self: self.message.from_user)
+
 
 # USEFUL FUNCTIONS
 # ====== =========
@@ -91,7 +93,7 @@ def logger(command):
         command(     update, **kwargs)
         if command.__name__ == 'unknown':
             command.__name__ = _get_command_name(update.message.text)
-        message = LOG_TEMPLATE.format(user=update.message.from_user.first_name,
+        message = LOG_TEMPLATE.format(user=update.user.first_name,
                                       command=command.__name__)
         logging.info(message)
     return wrapper
@@ -108,7 +110,7 @@ def sentry(command):
         if WHITELIST is None or chat_id in WHITELIST.split(','):
             command(update, **kwargs)
         else:
-            name = update.message.from_user.first_name
+            name = update.user.first_name
             update.reply(ERROR.NOT_AUTHORIZED.format(user=name))
             update.send()
     return wrapper
@@ -320,8 +322,7 @@ def new_command(update):
         boundary = NEW_TEMPLATE.format(ppid=last_ppid + 1,
                                        delimiter=FIELD_DELIMITER)
         accounts.write(boundary)
-    first_name = update.message.from_user.first_name
-    update.reply(INFO.POST_NEW.format(user=first_name))
+    update.reply(INFO.POST_NEW.format(user=update.user.first_name))
     update.send()
 
 
@@ -403,8 +404,8 @@ def withdraw_command(update, args):
         if MIN_AMOUNT <= amount <= MAX_AMOUNT:
             amount = _to_money(amount)
             ppid = _get_last_ppid()
-            uuid = update.message.from_user.id
-            first_name = update.message.from_user.first_name
+            uuid = update.user.id
+            first_name = update.user.first_name
             message = INFO.ANTE_WITHDRAW.format(amount=amount, user=first_name)
             update.reply(message)
             add_record(ppid, uuid, first_name, amount)
