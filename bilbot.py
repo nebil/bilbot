@@ -322,12 +322,12 @@ def new_command(update):
     """
 
     last_ppid, *rest = _get_last_line()
-    is_already_opened = not any(rest)
+    is_already_opened = _is_not_empty(ACCOUNTS) and not any(rest)
     if is_already_opened:
         update.reply(ERROR.ALREADY_OPENED)
     else:
         with open(ACCOUNTS, 'a') as accounts:
-            new_ppid = int(last_ppid) + 1
+            new_ppid = int(last_ppid or 0) + 1
             boundary = NEW_TEMPLATE.format(ppid=new_ppid,
                                            delimiter=FIELD_DELIMITER)
             accounts.write(boundary)
