@@ -160,11 +160,31 @@ def _select_filename(basename):
 
 
 def _get_last_line():
+    """
+    Return the last line written in the accounts file.
+    It could be a withdrawal or a new purchase period.
+
+    >>> _get_last_line()
+    ['2', 631104, 'Bob', '4.200']
+
+    # a purchase period is opened
+    >>> _get_last_line()
+    ['3=', '']
+    """
+
     last_line = check_output(['tail', '-1', ACCOUNTS]).decode('utf-8')
     return last_line.rstrip().split(FIELD_DELIMITER)
 
 
 def _get_last_ppid():
+    """
+    Return the current 'ppid' as a string
+    (aka. the purchase period identifier).
+
+    >>> _get_last_ppid()
+    '3'
+    """
+
     last_ppid, *_ = _get_last_line()
     return last_ppid.replace(GROUP_DELIMITER, '')
 
@@ -344,16 +364,26 @@ def list_command(update):
     """
 
     def is_from_ppid(line, ppid):
+        """
+        Check whether a withdrawal is from a specific period.
+
+        >>> is_from_ppid('1;314;Alice;7.650\n', '1')
+        True
+
+        >>> is_from_ppid('2=\n', '2')
+        False
+        """
+
         line_ppid, *rest = line.rstrip().split(FIELD_DELIMITER)
         return line_ppid == ppid if any(rest) else None
 
     def process(line):
         """
-        Process a string with a "<uuid>;<name>;<amount>" format,
+        Process a string with a "<ppid>;<uuid>;<name>;<amount>" format,
         replying to the user and returning the amount.
 
-        >>> process('314225;Alice;7.650\n')
-        7650          # (a message is sent)
+        >>> process('1;314225;Alice;7.650\n')
+        7650            # (a message is sent)
         """
 
         *_, name, amount = line.rstrip().split(FIELD_DELIMITER)
@@ -382,13 +412,13 @@ def withdraw_command(update, args):
     def add_record(ppid, uuid, name, amount):
         """
         Write a new record into the accounts document,
-        using the following format: "<uuid>;<name>;<amount>".
+        using the following format: "<ppid>;<uuid>;<name>;<amount>".
 
-        >>> add_record(314225, 'Alice', '650')
-        write('314225;Alice;650\n')
+        >>> add_record('1', 314225, 'Alice', '650')
+        write('1;314225;Alice;650\n')
 
-        >>> add_record(631104, 'Bob', '4.200')
-        write('631104;Bob;4.200\n')
+        >>> add_record('2', 631104, 'Bob', '4.200')
+        write('2;631104;Bob;4.200\n')
         """
 
         with open(ACCOUNTS, 'a') as accounts:
