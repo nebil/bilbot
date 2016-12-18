@@ -18,6 +18,7 @@ ERROR = Namespace(**{
                           Lo lamento, {user}.
                           No estoy autorizado a escuchar tus instrucciones.
                           """),
+    'ALREADY_OPENED':     "Ya existe un periodo abierto, terrícola.",
     'WRONG_ARGUMENT':     "El argumento `{argument}` es incorrecto.",
     'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
     'UNSOUND_AMOUNT':     "El monto es inválido.",

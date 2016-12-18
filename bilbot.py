@@ -159,9 +159,13 @@ def _select_filename(basename):
     return local_filepath if os.path.isfile(local_filepath) else basepath
 
 
-def _get_last_ppid():
+def _get_last_line():
     last_line = check_output(['tail', '-1', ACCOUNTS]).decode('utf-8')
-    return last_line.split(FIELD_DELIMITER)[0]
+    return last_line.rstrip().split(FIELD_DELIMITER)
+
+
+def _get_last_ppid():
+    return _get_last_line()[0]
 
 
 def _get_commands():
@@ -317,12 +321,17 @@ def new_command(update):
     Inicia un nuevo periodo.
     """
 
-    last_ppid = int(_get_last_ppid())
-    with open(ACCOUNTS, 'a') as accounts:
-        boundary = NEW_TEMPLATE.format(ppid=last_ppid + 1,
-                                       delimiter=FIELD_DELIMITER)
-        accounts.write(boundary)
-    update.reply(INFO.POST_NEW.format(user=update.user.first_name))
+    last_ppid, *rest = _get_last_line()
+    is_already_opened = not any(rest)
+    if is_already_opened:
+        update.reply(ERROR.ALREADY_OPENED)
+    else:
+        with open(ACCOUNTS, 'a') as accounts:
+            new_ppid = int(last_ppid) + 1
+            boundary = NEW_TEMPLATE.format(ppid=new_ppid,
+                                           delimiter=FIELD_DELIMITER)
+            accounts.write(boundary)
+        update.reply(INFO.POST_NEW.format(user=update.user.first_name))
     update.send()
 
 
