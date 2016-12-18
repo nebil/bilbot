@@ -165,7 +165,8 @@ def _get_last_line():
 
 
 def _get_last_ppid():
-    return _get_last_line()[0]
+    last_ppid, *_ = _get_last_line()
+    return last_ppid.replace(GROUP_DELIMITER, '')
 
 
 def _get_commands():
@@ -329,7 +330,7 @@ def new_command(update):
         with open(ACCOUNTS, 'a') as accounts:
             new_ppid = int(last_ppid or 0) + 1
             boundary = NEW_TEMPLATE.format(ppid=new_ppid,
-                                           delimiter=FIELD_DELIMITER)
+                                           delimiter=GROUP_DELIMITER)
             accounts.write(boundary)
         update.reply(INFO.POST_NEW.format(user=update.user.first_name))
     update.send()
@@ -520,6 +521,7 @@ MIN_AMOUNT = 500
 MAX_AMOUNT = 100000
 
 FIELD_DELIMITER = ';'
+GROUP_DELIMITER = '='
 CONFIG_FILENAME = 'bilbot.cfg'
 SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 
