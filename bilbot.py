@@ -359,10 +359,10 @@ def list_command(update):
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return int(amount.replace('.', ''))
 
-    if _is_not_empty(ACCOUNTS):
+    last_ppid, *rest = _get_last_line()
+    if _is_not_empty(ACCOUNTS) and any(rest):
         with open(ACCOUNTS, 'r') as accounts:
             update.reply(INFO.ANTE_LIST)
-            last_ppid = _get_last_ppid()
             total = sum(process(line) for line in accounts
                         if is_from_ppid(line, last_ppid))
             update.reply(INFO.POST_LIST.format(amount=_to_money(total)))
