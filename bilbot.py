@@ -16,7 +16,8 @@ import inspect
 import logging
 import os
 
-from functools import wraps
+from collections import defaultdict
+from functools import reduce, wraps
 from subprocess import check_output
 import changelog
 from messages import ERROR, INFO
@@ -358,7 +359,7 @@ def new_command(update):
 
 @logger
 @sentry
-def list_command(update):
+def list_command(update, args):
     """
     Muestra todos los registros.
     """
@@ -386,17 +387,32 @@ def list_command(update):
         7650            # (a message is sent)
         """
 
-        *_, name, amount = line.rstrip().split(FIELD_DELIMITER)
+        *_, uuid, name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
-        return int(amount.replace('.', ''))
+        return (uuid, name), int(amount.replace('.', ''))
 
     last_ppid, *rest = _get_last_line()
     if _is_not_empty(ACCOUNTS) and any(rest):
         with open(ACCOUNTS, 'r') as accounts:
             update.reply(INFO.ANTE_LIST)
-            total = sum(process(line) for line in accounts
-                        if is_from_ppid(line, last_ppid))
+            from_last_ppid = (process(line) for line in accounts
+                              if is_from_ppid(line, last_ppid))
+
+            aggregate = reduce(
+                lambda memo, row:
+                # NOTE: trick to return a dictionary after an update.
+                memo.update({row[0]: memo[row[0]] + row[1]}) or memo,
+                from_last_ppid, defaultdict(int))
+            total = sum(aggregate.values())
             update.reply(INFO.POST_LIST.format(amount=_to_money(total)))
+
+            if args and args[0] == 'agg':
+                update.reply(INFO.POST_AGGREGATE_LIST)
+                for user, amount in aggregate.items():
+                    _, first_name = user
+                    amount = _to_money(amount)
+                    update.reply(INFO.EACH_LIST.format(user=first_name,
+                                                       amount=amount))
     else:
         update.reply(ERROR.NO_STORED_ACCOUNTS)
     update.send(parse_mode='markdown')

@@ -74,4 +74,5 @@ INFO = Namespace(**{
                  Por cierto, esto suma un gran total de...
                  *{amount}* pesos chilenos.
                  """),
+    'POST_AGGREGATE_LIST': "Además, si agregamos por cada humano...",
 })
