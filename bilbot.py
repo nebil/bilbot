@@ -317,22 +317,37 @@ def about_command(update, args):
 
 @logger
 @sentry
-def help_command(update):
+def help_command(update, args):
     """
     Recibe (un poco de) ayuda.
+    Este comando te ayudará cuando estés perdido.
+    Con `/help`, te entregaré un resumen de los comandos disponibles.
+    Con `/help <comando>`, te daré algunos detalles sobre ese comando.
     """
 
     def format_(name, function, length):
-        docstring = inspect.getdoc(function)
+        summary, *_ = inspect.getdoc(function).split('\n')
         return CMD_TEMPLATE.format(command=name,
-                                   description=docstring,
+                                   summary=summary,
                                    fill=length)
 
-    cmd_dict = sorted(COMMANDS.items())
-    max_length = max(map(len, COMMANDS))  # find the longest command.
-    commands = (format_(*cmd, length=max_length) for cmd in cmd_dict)
-    help_message = INFO.HELP.format(commands=_itemize(commands))
-    update.reply(help_message)
+    if len(args) == 0:
+        cmd_dict = sorted(COMMANDS.items())
+        max_length = max(map(len, COMMANDS))  # find the longest command.
+        commands = (format_(*cmd, length=max_length) for cmd in cmd_dict)
+        help_message = INFO.HELP.format(commands=_itemize(commands))
+        update.reply(help_message)
+    elif len(args) == 1:
+        cmd_name = args[0]
+        cmd_func = COMMANDS.get(cmd_name, None)
+        if cmd_func:
+            _, *details = inspect.getdoc(cmd_func).split('\n')
+            update.reply(_itemize(details))
+        else:
+            cmd_name = '/{}'.format(cmd_name)
+            update.reply(ERROR.UNKNOWN_COMMAND.format(command=cmd_name))
+    else:
+        update.reply(ERROR.TOO_MANY_ARGUMENTS)
     update.send(parse_mode='markdown')
 
 
@@ -554,7 +569,7 @@ MISSING_TOKEN = ("\nThe bot token is missing."
 # TEMPLATES
 # =========
 
-CMD_TEMPLATE = "`{command:>{fill}}` — {description}"
+CMD_TEMPLATE = "`{command:>{fill}}` — {summary}"
 LOG_TEMPLATE = "{user} called {command}."
 NEW_TEMPLATE = "{ppid}{delimiter}\n"
 REC_TEMPLATE = "{ppid}{delimiter}{uuid}{delimiter}{user}{delimiter}{amount}\n"
