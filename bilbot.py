@@ -16,7 +16,7 @@ import inspect
 import logging
 import os
 
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from functools import reduce, wraps
 from subprocess import check_output
 import changelog
@@ -389,7 +389,8 @@ def list_command(update, args):
 
         *_, uuid, name, amount = line.rstrip().split(FIELD_DELIMITER)
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
-        return (uuid, name), int(amount.replace('.', ''))
+        user = namedtuple('user', ['uuid', 'name'])
+        return user(uuid, name), int(amount.replace('.', ''))
 
     def sum_amount(aggregate, row_record):
         """
@@ -419,9 +420,8 @@ def list_command(update, args):
             if args and args[0] == 'agg':
                 update.reply(INFO.POST_AGGREGATE_LIST)
                 for user, amount in aggregate.items():
-                    _, first_name = user
                     amount = _to_money(amount)
-                    update.reply(INFO.EACH_LIST.format(user=first_name,
+                    update.reply(INFO.EACH_LIST.format(user=user.name,
                                                        amount=amount))
     else:
         update.reply(ERROR.NO_STORED_ACCOUNTS)
