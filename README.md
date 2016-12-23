@@ -70,7 +70,7 @@ Para utilizar a Bilbot localmente, debes seguir los siguientes pasos.
 2. :wrench:
    Genera un entorno virtual de Python v3.**X** con [virtualenv].
    En este caso, se llamará `venv`.  
-   No olvides que **X** debe ser: {3, 4, 5}.
+   No olvides que **X** debe ser: {3, 4, 5, 6}.
 
    ```sh
    $ virtualenv --python=python3.X venv
