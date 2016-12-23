@@ -391,6 +391,20 @@ def list_command(update, args):
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         return (uuid, name), int(amount.replace('.', ''))
 
+    def sum_amount(aggregate, row_record):
+        """
+        Add an amount of money to a specific user,
+        to build a dictionary with aggregate data.
+
+        >>> sum_amount({'Alice': 600, Bob': 500},
+                                    ('Bob', 300))
+        {'Alice': 600, 'Bob': 800}
+        """
+
+        user, amount = row_record
+        aggregate[user] += amount
+        return aggregate
+
     last_ppid, *rest = _get_last_line()
     if _is_not_empty(ACCOUNTS) and any(rest):
         with open(ACCOUNTS, 'r') as accounts:
@@ -398,11 +412,7 @@ def list_command(update, args):
             from_last_ppid = (process(line) for line in accounts
                               if is_from_ppid(line, last_ppid))
 
-            aggregate = reduce(
-                lambda memo, row:
-                # NOTE: trick to return a dictionary after an update.
-                memo.update({row[0]: memo[row[0]] + row[1]}) or memo,
-                from_last_ppid, defaultdict(int))
+            aggregate = reduce(sum_amount, from_last_ppid, defaultdict(int))
             total = sum(aggregate.values())
             update.reply(INFO.POST_LIST.format(amount=_to_money(total)))
 
