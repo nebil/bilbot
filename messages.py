@@ -54,6 +54,8 @@ INFO = Namespace(**{
     'HELP': dedent("""
             Mis comandos son:
             {commands}
+
+            Para obtener información detallada, escribe `/help <comando>`.
             """),
 
     # from Latin: 'ante' --> before,

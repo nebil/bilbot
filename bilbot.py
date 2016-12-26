@@ -282,6 +282,11 @@ def _to_money(amount):
 def start_command(update):
     """
     Enciende a `nebilbot`.
+    🚀 `start` 🚀
+
+    Este comando sirve para finalizar mi somnolencia.
+    Pero también puedes usarlo para saber si es que estoy encendido.
+    Como podrás colegir, astuto terrícola, ahora sí estoy encendido.
     """
 
     update.reply(INFO.START)
@@ -293,6 +298,14 @@ def start_command(update):
 def about_command(update, args):
     """
     Conoce algo sobre mí.
+    🔍 `about` 🔍
+
+    Este comando entrega información relacionada a mí.
+    • `/about` ofrece información básica acerca de mí;
+    • `/about releases` devuelve mi extenso historial de versiones;
+    • `/about <versión>` informa sobre ese _release_ en particular.
+    Por ejemplo, para obtener el _changelog_ de la versión `0.2.2`:
+    `/about 0.2.2`
     """
 
     def format_(version):
@@ -320,9 +333,11 @@ def about_command(update, args):
 def help_command(update, args):
     """
     Recibe (un poco de) ayuda.
-    Este comando te ayudará cuando estés perdido.
-    Con `/help`, te entregaré un resumen de los comandos disponibles.
-    Con `/help <comando>`, te daré algunos detalles sobre ese comando.
+    ℹ️ `help` ℹ️
+
+    Este comando cuenta con dos modalidades.
+    • `/help` entrega un breve resumen de los comandos disponibles;
+    • `/help <comando>` proporciona más detalles sobre ese comando.
     """
 
     def format_(name, function, length):
@@ -356,6 +371,11 @@ def help_command(update, args):
 def new_command(update):
     """
     Inicia un nuevo periodo.
+    🆕 `new` 🆕
+
+    Este comando establece un nuevo periodo de compras.
+    Cada transacción está enmarcada en un único periodo.
+    Cada periodo puede almacenar una o más transacciones.
     """
 
     last_ppid, *rest = _get_last_line()
@@ -377,6 +397,11 @@ def new_command(update):
 def list_command(update, args):
     """
     Muestra todos los registros.
+    📊 `list` 📊
+
+    Este comando cuenta con dos modalidades.
+    • `/list` muestra una lista con las transacciones realizadas;
+    • `/list agg` añade, además, los datos agregados por usuario.
     """
 
     def is_from_ppid(line, ppid):
@@ -448,6 +473,11 @@ def list_command(update, args):
 def withdraw_command(update, args):
     """
     Agrega un nuevo registro.
+    💸 `withdraw` 💸
+
+    Este comando registra un nueva transacción.
+    Por ejemplo, para almacenar tres mil pesos:
+    `/withdraw 3000`
     """
 
     def add_record(ppid, uuid, name, amount):
@@ -515,6 +545,11 @@ def withdraw_command(update, args):
 def rollback_command(update):
     """
     Borra el registro más nuevo.
+    ⏪ `rollback` ⏪
+
+    En términos generales, este comando revierte la operación más reciente.
+    Por ejemplo, es posible borrar un _withdrawal_ con un monto incorrecto.
+    🚫 No es posible hacer `rollback` de un `clear` o de un mismo `rollback`.
     """
 
     if _is_not_empty(ACCOUNTS):
@@ -532,6 +567,10 @@ def rollback_command(update):
 def clear_command(update):
     """
     Elimina todos los registros.
+    🔥 `clear` 🔥
+
+    Este comando suprime todos los registros almacenados.
+    ⚠️ Esto puede provocar efectos altamente destructivos.
     """
 
     if _is_not_empty(ACCOUNTS):
