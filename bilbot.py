@@ -649,23 +649,23 @@ with open(SELECTED_CONFIG) as cfgfile:
     MIN_AMOUNT = int(CONFIG_DICT.get('min_withdrawal') or 500)
     MAX_AMOUNT = int(CONFIG_DICT.get('max_withdrawal') or 100000)
 
-    if not BOT_TOKEN:
-        raise Exception(MISSING_BOT_TOKEN)
+    EXCEPTIONS = {
+        not BOT_TOKEN:
+        (MISSING_BOT_TOKEN, {}),
 
-    if MIN_AMOUNT < 1:
-        error_message = NONPOSITIVE_VALUE.format(amount=MIN_AMOUNT,
-                                                 m__='min')
-        raise Exception(error_message)
+        MIN_AMOUNT < 1:
+        (NONPOSITIVE_VALUE, {'amount': MIN_AMOUNT, 'm__': 'min'}),
 
-    if MAX_AMOUNT < 1:
-        error_message = NONPOSITIVE_VALUE.format(amount=MAX_AMOUNT,
-                                                 m__='max')
-        raise Exception(error_message)
+        MAX_AMOUNT < 1:
+        (NONPOSITIVE_VALUE, {'amount': MAX_AMOUNT, 'm__': 'max'}),
 
-    if MIN_AMOUNT > MAX_AMOUNT:
-        error_message = MIN_GT_MAX_VALUES.format(min=MIN_AMOUNT,
-                                                 max=MAX_AMOUNT)
-        raise Exception(error_message)
+        MIN_AMOUNT > MAX_AMOUNT:
+        (MIN_GT_MAX_VALUES, {'min': MIN_AMOUNT, 'max': MAX_AMOUNT}),
+    }
+
+    for check, error in EXCEPTIONS.items():
+        error_message, error_kwargs = error
+        if check: raise Exception(error_message.format(**error_kwargs))
 
 
 if __name__ == '__main__':
