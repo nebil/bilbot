@@ -643,7 +643,11 @@ CONFIG_FILENAME = 'bilbot.cfg'
 SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 
 with open(SELECTED_CONFIG) as cfgfile:
-    CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
+    CONFIG_DICT = dict(line.rstrip().split('=')
+                       for line in cfgfile
+                       if line.lstrip() and                # not empty and
+                       not line.lstrip().startswith('#'))  # not a comment
+
     BOT_TOKEN = CONFIG_DICT.get('bot_token')
     WHITELIST = CONFIG_DICT.get('whitelist')
     MIN_AMOUNT = int(CONFIG_DICT.get('min_withdrawal') or 500)
