@@ -631,9 +631,6 @@ LOGFILE = os.path.join(LOG_DIR, 'bilbot.log')
 DATA_DIR = os.getenv('OPENSHIFT_DATA_DIR', '.')
 ACCOUNTS = os.path.join(DATA_DIR, 'accounts.txt')
 
-MIN_AMOUNT = 500
-MAX_AMOUNT = 100000
-
 FIELD_DELIMITER = ';'
 GROUP_DELIMITER = '='
 CONFIG_FILENAME = 'bilbot.cfg'
@@ -643,6 +640,8 @@ with open(SELECTED_CONFIG) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=') for line in cfgfile)
     BOT_TOKEN = CONFIG_DICT.get('bot_token')
     WHITELIST = CONFIG_DICT.get('whitelist')
+    MIN_AMOUNT = int(CONFIG_DICT.get('min_withdrawal') or 500)
+    MAX_AMOUNT = int(CONFIG_DICT.get('max_withdrawal') or 100000)
 
     if not BOT_TOKEN:
         raise Exception(MISSING_TOKEN)
