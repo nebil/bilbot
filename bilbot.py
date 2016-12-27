@@ -316,15 +316,16 @@ def about_command(update, args):
         update.reply(INFO.ABOUT.format(version=__VERSION__))
     elif len(args) == 1:
         argument = args[0]
+        releases = changelog.RELEASES
         if argument == 'releases':
-            numbers = map(format_, sorted(changelog.RELEASES.keys()))
+            numbers = map(format_, sorted(releases.keys()))
             message = INFO.ABOUT_RELEASES.format(releases=_itemize(numbers))
         elif argument == 'latest':
             update.reply(INFO.ABOUT_LATEST.format(latest=__VERSION__))
-            message = changelog.RELEASES[__VERSION__]
+            message = releases[__VERSION__]
         else:
             error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
-            message = changelog.RELEASES.get(argument, error_message)
+            message = releases.get(argument, error_message)
         update.reply(message)
     else:
         update.reply(ERROR.TOO_MANY_ARGUMENTS)
