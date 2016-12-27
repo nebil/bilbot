@@ -605,9 +605,15 @@ def unknown(update):
 # EXCEPTIONS
 # ==========
 
-MISSING_TOKEN = ("\nThe bot token is missing."
-                 "\nPlease, declare the token in the configuration file.")
+MISSING_BOT_TOKEN = ("\nThe bot token is missing."
+                     "\nPlease, declare the token in the configuration file.")
 
+NONPOSITIVE_VALUE = ("\n{amount} is not a valid configuration value."
+                     "\nPlease, declare a positive {m__}imal amount.")
+
+MIN_GT_MAX_VALUES = ("\nThe minimum value ({min:,}) cannot be greater than "
+                     "\nthe maximum value ({max:,})."
+                     "\nPlease, adjust these values.")
 
 # TEMPLATES
 # =========
@@ -644,7 +650,22 @@ with open(SELECTED_CONFIG) as cfgfile:
     MAX_AMOUNT = int(CONFIG_DICT.get('max_withdrawal') or 100000)
 
     if not BOT_TOKEN:
-        raise Exception(MISSING_TOKEN)
+        raise Exception(MISSING_BOT_TOKEN)
+
+    if MIN_AMOUNT < 1:
+        error_message = NONPOSITIVE_VALUE.format(amount=MIN_AMOUNT,
+                                                 m__='min')
+        raise Exception(error_message)
+
+    if MAX_AMOUNT < 1:
+        error_message = NONPOSITIVE_VALUE.format(amount=MAX_AMOUNT,
+                                                 m__='max')
+        raise Exception(error_message)
+
+    if MIN_AMOUNT > MAX_AMOUNT:
+        error_message = MIN_GT_MAX_VALUES.format(min=MIN_AMOUNT,
+                                                 max=MAX_AMOUNT)
+        raise Exception(error_message)
 
 
 if __name__ == '__main__':
