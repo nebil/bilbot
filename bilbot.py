@@ -649,23 +649,25 @@ with open(SELECTED_CONFIG) as cfgfile:
     MIN_AMOUNT = int(CONFIG_DICT.get('min_withdrawal') or 500)
     MAX_AMOUNT = int(CONFIG_DICT.get('max_withdrawal') or 100000)
 
+    # pylint: disable=invalid-name
+    error = namedtuple('error', ['message', 'kwargs'])
+
     EXCEPTIONS = {
         not BOT_TOKEN:
-        (MISSING_BOT_TOKEN, {}),
+        error(MISSING_BOT_TOKEN, {}),
 
         MIN_AMOUNT < 1:
-        (NONPOSITIVE_VALUE, {'amount': MIN_AMOUNT, 'm__': 'min'}),
+        error(NONPOSITIVE_VALUE, {'amount': MIN_AMOUNT, 'm__': 'min'}),
 
         MAX_AMOUNT < 1:
-        (NONPOSITIVE_VALUE, {'amount': MAX_AMOUNT, 'm__': 'max'}),
+        error(NONPOSITIVE_VALUE, {'amount': MAX_AMOUNT, 'm__': 'max'}),
 
         MIN_AMOUNT > MAX_AMOUNT:
-        (MIN_GT_MAX_VALUES, {'min': MIN_AMOUNT, 'max': MAX_AMOUNT}),
+        error(MIN_GT_MAX_VALUES, {'min': MIN_AMOUNT, 'max': MAX_AMOUNT}),
     }
 
     for check, error in EXCEPTIONS.items():
-        error_message, error_kwargs = error
-        if check: raise Exception(error_message.format(**error_kwargs))
+        if check: raise Exception(error.message.format(**error.kwargs))
 
 
 if __name__ == '__main__':
