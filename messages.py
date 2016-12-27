@@ -44,6 +44,7 @@ INFO = Namespace(**{
                       Pero también me puedes llamar Bilbot.
                       Mi versión es `{version}`.
                       """),
+    'ABOUT_LATEST':   "Mi última versión estable es `{latest}`.",
     'ABOUT_RELEASES': dedent("""
                       Bueno, he tenido bastantes versiones en mi vida...
                       {releases}

@@ -319,6 +319,9 @@ def about_command(update, args):
         if argument == 'releases':
             numbers = map(format_, sorted(changelog.RELEASES.keys()))
             message = INFO.ABOUT_RELEASES.format(releases=_itemize(numbers))
+        elif argument == 'latest':
+            update.reply(INFO.ABOUT_LATEST.format(latest=__VERSION__))
+            message = changelog.RELEASES[__VERSION__]
         else:
             error_message = ERROR.WRONG_ARGUMENT.format(argument=argument)
             message = changelog.RELEASES.get(argument, error_message)
