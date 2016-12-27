@@ -117,6 +117,23 @@ def sentry(command):
     return wrapper
 
 
+def _is_useful(line):
+    """
+    Check whether a line is empty or is a comment.
+
+    >>> _is_useful('                          \n')
+    False
+
+    >>> _is_useful(' # This line shall be false!')
+    False
+    """
+
+    is_empty = not line.lstrip()
+    is_comment = line.lstrip().startswith('#')
+
+    return not (is_empty or is_comment)
+
+
 def _is_not_empty(filepath):
     """
     Check whether a file is empty or not.
@@ -645,8 +662,7 @@ SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
 with open(SELECTED_CONFIG) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=')
                        for line in cfgfile
-                       if line.lstrip() and                # not empty and
-                       not line.lstrip().startswith('#'))  # not a comment
+                       if _is_useful(line))
 
     BOT_TOKEN = CONFIG_DICT.get('bot_token')
     WHITELIST = CONFIG_DICT.get('whitelist')
