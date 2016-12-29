@@ -21,19 +21,25 @@ se **deberá** usar una versión de Python superior a **3.3**.
 Los archivos del repositorio están resumidos en la siguiente tabla.
 
 Nombre             | Descripción
------------------- | ------------------------------------------
+------------------ | ----------------------------------------
+`bilbot`           | _(véase la tabla de abajo)_
 `.gitignore`       | Archivos ignorados por Git.
 `.pylintrc`        | _Config-file_ de `pylint`.
+`LICENSE`          | Documento con el Mozilla Public License.
+`README.md`        | `self`
+`requirements.txt` | Archivo de dependencias para `pip`.
+`tox.ini`          | _Config-file_ de `flake8`.
+
+#### En `bilbot/`
+
+Nombre             | Descripción
+------------------ | ------------------------------------------
 `bilbot.cfg`       | _Config-file_ de `bilbot`.
 `bilbot.py`        | Módulo esencial de Bilbot.
 `changelog.py`     | Módulo con el _changelog_.
 `commands.py`      | Módulo con todos los comandos de `bilbot`.
 `messages.py`      | Módulo con los mensajes para los usuarios.
-`LICENSE`          | Documento con el Mozilla Public License.
-`README.md`        | `self`
-`requirements.txt` | Archivo de dependencias para `pip`.
 `settings.py`      | Módulo con los ajustes de `bilbot`.
-`tox.ini`          | _Config-file_ de `flake8`.
 
 #### Librerías de Python
 
@@ -93,13 +99,13 @@ Para utilizar a Bilbot localmente, debes seguir los siguientes pasos.
    ```
 
 5. :wrench:
-   Configura el archivo `bilbot.cfg` con el _token_ de tu bot.
+   Configura el archivo `bilbot/bilbot.cfg` con el _token_ de tu bot.
 
 6. :snake:
    Ejecuta el _script_.
 
    ```sh
-   $ python3 bilbot.py
+   $ python3 bilbot/bilbot.py
    ```
 
 7. :tada:
