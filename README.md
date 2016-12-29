@@ -27,6 +27,7 @@ Nombre             | Descripción
 `bilbot.cfg`       | _Config-file_ de `bilbot`.
 `bilbot.py`        | Módulo esencial de Bilbot.
 `changelog.py`     | Módulo con el _changelog_.
+`commands.py`      | Módulo con todos los comandos de `bilbot`.
 `messages.py`      | Módulo con los mensajes para los usuarios.
 `LICENSE`          | Documento con el Mozilla Public License.
 `README.md`        | `self`

@@ -7,7 +7,6 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 """
 
 from textwrap import dedent
-from bilbot import _get_release_type
 
 INTRO = "This new {release_type} release comes up with the following changes,"
 
@@ -79,13 +78,34 @@ RELEASES = {
 }
 
 
+def get_release_type(version):
+    """
+    Indicate whether is a major, minor or patch release.
+
+    >>> get_release_type('3.1.4')
+    'patch'
+
+    >>> get_release_type('4.2.0')
+    'minor'
+
+    >>> get_release_type('5.0.0')
+    'major'
+    """
+
+    # NOTE: I think this is an elegant implementation.
+    major, minor, patch = map(int, version.split('.'))
+    if patch: return 'patch'
+    if minor: return 'minor'
+    if major: return 'major'
+
+
 def _fill_changelog(version):
     """
     Return a particular release changelog,
     filled in with its pertinent preamble.
     """
 
-    type_ = _get_release_type(version)
+    type_ = get_release_type(version)
     intro = INTRO.format(release_type=type_)
     return RELEASES[version].format(introduction=intro)
 
