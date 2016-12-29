@@ -31,6 +31,7 @@ Nombre             | Descripción
 `LICENSE`          | Documento con el Mozilla Public License.
 `README.md`        | `self`
 `requirements.txt` | Archivo de dependencias para `pip`.
+`settings.py`      | Módulo con los ajustes de `bilbot`.
 `tox.ini`          | _Config-file_ de `flake8`.
 
 #### Librerías de Python
