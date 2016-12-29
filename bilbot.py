@@ -12,6 +12,7 @@ __AUTHOR__ = 'Nebil Kawas García'
 __LICENSE__ = 'MPL-2.0'
 __VERSION__ = '0.2.2'
 
+import csv
 import inspect
 import logging
 import os
@@ -436,7 +437,7 @@ def list_command(update, args):
         False
         """
 
-        line_ppid, *rest = line.rstrip().split(FIELD_DELIMITER)
+        line_ppid, *rest = line
         return line_ppid == ppid if any(rest) else None
 
     def process(line):
@@ -448,7 +449,7 @@ def list_command(update, args):
         7650            # (a message is sent)
         """
 
-        *_, uuid, name, amount = line.rstrip().split(FIELD_DELIMITER)
+        *_, uuid, name, amount = line
         update.reply(INFO.EACH_LIST.format(user=name, amount=amount))
         user = namedtuple('user', ['uuid', 'name'])
         return user(uuid, name), int(amount.replace('.', ''))
@@ -470,8 +471,9 @@ def list_command(update, args):
     last_ppid, *rest = _get_last_line()
     if _is_not_empty(ACCOUNTS) and any(rest):
         with open(ACCOUNTS, 'r') as accounts:
+            reader = csv.reader(accounts, **CSV_KWARGS)
             update.reply(INFO.ANTE_LIST)
-            from_last_ppid = (process(line) for line in accounts
+            from_last_ppid = (process(line) for line in reader
                               if is_from_ppid(line, last_ppid))
 
             aggregate = reduce(sum_amount, from_last_ppid, defaultdict(int))
@@ -514,12 +516,8 @@ def withdraw_command(update, args):
         """
 
         with open(ACCOUNTS, 'a') as accounts:
-            record = REC_TEMPLATE.format(ppid=ppid,
-                                         uuid=uuid,
-                                         user=name,
-                                         amount=amount,
-                                         delimiter=FIELD_DELIMITER)
-            accounts.write(record)
+            writer = csv.writer(accounts, **CSV_KWARGS)
+            writer.writerow([ppid, uuid, name, amount])
 
     def withdraw(amount):
         """
@@ -638,7 +636,6 @@ MIN_GT_MAX_VALUES = ("\nThe minimum value ({min:,}) cannot be greater than "
 CMD_TEMPLATE = "`{command:>{fill}}` — {summary}"
 LOG_TEMPLATE = "{user} called {command}."
 NEW_TEMPLATE = "{ppid}{delimiter}\n"
-REC_TEMPLATE = "{ppid}{delimiter}{uuid}{delimiter}{user}{delimiter}{amount}\n"
 VER_TEMPLATE = {
     'major': '✨ `{}`',
     'minor': '🎁 `{}`',
@@ -658,6 +655,11 @@ FIELD_DELIMITER = ';'
 GROUP_DELIMITER = '='
 CONFIG_FILENAME = 'bilbot.cfg'
 SELECTED_CONFIG = _select_filename(CONFIG_FILENAME)
+
+CSV_KWARGS = {
+    'delimiter': FIELD_DELIMITER,
+    'lineterminator': '\n',
+}
 
 with open(SELECTED_CONFIG) as cfgfile:
     CONFIG_DICT = dict(line.rstrip().split('=')
