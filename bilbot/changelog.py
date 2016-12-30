@@ -75,6 +75,18 @@ RELEASES = {
     💅 some aesthetic refinements to the output of a couple of commands;
     🎨 a few refactoring efforts to get a more readable code.
     """),
+    ########
+    '0.3.0': dedent("""
+    {introduction}
+    🆕 a new command... the `/new` command;
+    📊 `/list agg` to ask for a list with *agg*regate data by user;
+    💁 `/help [cmd]` to request some help about a specific command;
+    🔍 `/about latest` to get information about the latest release;
+    🌫 a methodical restructuring to obtain a more modular project;
+    🎨 a fair amount of refactoring attempts;
+    🐍 (unreliable) support for Python v3.6;
+    ⬆️ and, finally, an updated dependency.
+    """),
 }
 
 
