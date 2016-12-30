@@ -18,6 +18,7 @@ ERROR = Namespace(**{
                           Lo lamento, {user}.
                           No estoy autorizado a escuchar tus instrucciones.
                           """),
+    'ALREADY_OPENED':     "Ya existe un periodo abierto, terrícola.",
     'WRONG_ARGUMENT':     "El argumento `{argument}` es incorrecto.",
     'MISSING_AMOUNT':     "Debes agregar el monto, terrícola.",
     'UNSOUND_AMOUNT':     "El monto es inválido.",
@@ -43,6 +44,7 @@ INFO = Namespace(**{
                       Pero también me puedes llamar Bilbot.
                       Mi versión es `{version}`.
                       """),
+    'ABOUT_LATEST':   "Mi última versión estable es `{latest}`.",
     'ABOUT_RELEASES': dedent("""
                       Bueno, he tenido bastantes versiones en mi vida...
                       {releases}
@@ -53,10 +55,14 @@ INFO = Namespace(**{
     'HELP': dedent("""
             Mis comandos son:
             {commands}
+
+            Para obtener información detallada, escribe `/help <comando>`.
             """),
 
     # from Latin: 'ante' --> before,
     #             'post' --> after.
+    'POST_NEW': "Muy bien, {user}. He abierto un nuevo periodo de compras.",
+
     'POST_CLEAR': "Todo listo: he eliminado cualquier rastro de registros.",
 
     'ANTE_WITHDRAW': "¿Estás seguro de que deseas retirar *{amount}* pesos "
@@ -71,4 +77,5 @@ INFO = Namespace(**{
                  Por cierto, esto suma un gran total de...
                  *{amount}* pesos chilenos.
                  """),
+    'POST_AGGREGATE_LIST': "Además, si agregamos por cada humano...",
 })

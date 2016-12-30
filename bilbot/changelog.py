@@ -7,7 +7,6 @@ You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 """
 
 from textwrap import dedent
-from bilbot import _get_release_type
 
 INTRO = "This new {release_type} release comes up with the following changes,"
 
@@ -76,7 +75,40 @@ RELEASES = {
     💅 some aesthetic refinements to the output of a couple of commands;
     🎨 a few refactoring efforts to get a more readable code.
     """),
+    ########
+    '0.3.0': dedent("""
+    {introduction}
+    🆕 a new command... the `/new` command;
+    📊 `/list agg` to ask for a list with *agg*regate data by user;
+    💁 `/help [cmd]` to request some help about a specific command;
+    🔍 `/about latest` to get information about the latest release;
+    🌫 a methodical restructuring to obtain a more modular project;
+    🎨 a fair amount of refactoring attempts;
+    🐍 (unreliable) support for Python v3.6;
+    ⬆️ and, finally, an updated dependency.
+    """),
 }
+
+
+def get_release_type(version):
+    """
+    Indicate whether is a major, minor or patch release.
+
+    >>> get_release_type('3.1.4')
+    'patch'
+
+    >>> get_release_type('4.2.0')
+    'minor'
+
+    >>> get_release_type('5.0.0')
+    'major'
+    """
+
+    # NOTE: I think this is an elegant implementation.
+    major, minor, patch = map(int, version.split('.'))
+    if patch: return 'patch'
+    if minor: return 'minor'
+    if major: return 'major'
 
 
 def _fill_changelog(version):
@@ -85,7 +117,7 @@ def _fill_changelog(version):
     filled in with its pertinent preamble.
     """
 
-    type_ = _get_release_type(version)
+    type_ = get_release_type(version)
     intro = INTRO.format(release_type=type_)
     return RELEASES[version].format(introduction=intro)
 
