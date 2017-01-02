@@ -1,7 +1,7 @@
 """
 This module stores all the messages sent from Bilbot.
 
-Copyright (c) 2016, Nebil Kawas García
+Copyright (c) 2016-2017, Nebil Kawas García
 This source code is subject to the terms of the Mozilla Public License.
 You can obtain a copy of the MPL at <https://www.mozilla.org/MPL/2.0/>.
 """
