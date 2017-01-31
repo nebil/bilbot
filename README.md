@@ -71,7 +71,7 @@ Para utilizar a Bilbot localmente, debes seguir los siguientes pasos.
    Clona el repositorio. Luego, accede.
 
    ```sh
-   $ git clone https://github.com/nkawasg/bilbot.git
+   $ git clone https://github.com/nebil/bilbot.git
    $ cd bilbot
    ```
 
